@@ -16,7 +16,3 @@ build:
               - requirements-txt
               - --output-file
               - requirements.txt
-        after:
-          - command:
-              - rm
-              - requirements.txt
