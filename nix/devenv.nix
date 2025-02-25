@@ -43,6 +43,7 @@
         };
         packages = [
           pkgs.gh
+          pkgs.skaffold
           pkgs.uv
         ];
       };
