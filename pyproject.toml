@@ -1,7 +1,7 @@
 [project]
 name = "apeiron"
 version = "0.1.0"
-description = "Add your description here"
+description = "A multitask AI agent designed to streamline and automate operational workflows"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = []
