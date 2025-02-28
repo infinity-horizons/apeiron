@@ -1,4 +1,4 @@
-apiVersion: skaffold/v4beta9
+apiVersion: skaffold/v4beta12
 kind: Config
 metadata:
   name: apeiron
@@ -17,6 +17,10 @@ build:
               - requirements-txt
               - --output-file
               - requirements.txt
+  googleCloudBuild:
+    projectId: shikanime-studio-labs
+    region: europe-west9
+    bucket: shikanime-studio-labs-europe-west9-cloudbuild
 manifests:
   kustomize:
     paths:
