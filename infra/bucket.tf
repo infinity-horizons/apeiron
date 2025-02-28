@@ -1,6 +1,9 @@
-resource "google_storage_bucket" "cloudbuild" {
-  project                     = var.project
-  name                        = "${var.project}-europe-west9-cloudbuild"
-  location                    = "europe-west9"
-  uniform_bucket_level_access = true
+module "cloud_storage" {
+  source  = "terraform-google-modules/cloud-storage/google"
+  version = "~> 9.1"
+
+  project_id = var.project
+  names      = ["cloudbuild"]
+  prefix     = "${var.project}-europe-west9"
+  location   = "europe-west9"
 }

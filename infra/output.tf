@@ -18,6 +18,11 @@ output "artifact_registry_repositories" {
 output "buckets" {
   description = "The Cloud Build artifact bucket"
   value = {
-    cloudbuild = google_storage_bucket.cloudbuild.name
+    cloudbuild = module.cloud_storage.name
   }
+}
+
+output "service_account" {
+  description = "The email of the service account"
+  value       = module.service_accounts.email
 }

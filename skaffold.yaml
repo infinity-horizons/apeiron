@@ -2,7 +2,6 @@ apiVersion: skaffold/v4beta12
 kind: Config
 metadata:
   name: apeiron
-  namespace: shikanime-studio-labs
 build:
   artifacts:
     - image: europe-west9-docker.pkg.dev/shikanime-studio-labs/apeiron
