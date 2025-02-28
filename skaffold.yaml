@@ -2,6 +2,7 @@ apiVersion: skaffold/v4beta12
 kind: Config
 metadata:
   name: apeiron
+  namespace: shikanime-studio-labs
 build:
   artifacts:
     - image: europe-west9-docker.pkg.dev/shikanime-studio-labs/apeiron
@@ -18,7 +19,6 @@ build:
               - --output-file
               - requirements.txt
   googleCloudBuild:
-    projectId: shikanime-studio-labs
     bucket: shikanime-studio-labs-europe-west9-cloudbuild
 manifests:
   kustomize:
@@ -26,5 +26,4 @@ manifests:
       - manifests
 deploy:
   cloudrun:
-    projectid: shikanime-studio-labs
     region: europe-west9
