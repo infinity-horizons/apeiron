@@ -4,7 +4,7 @@ metadata:
   name: apeiron
 build:
   artifacts:
-    - image: apeiron
+    - image: europe-west9-docker.pkg.dev/shikanime-studio-labs/apeiron
       buildpacks:
         builder: heroku/builder:24
       hooks:
@@ -12,7 +12,16 @@ build:
           - command:
               - uv
               - export
+              - --quiet
               - --format
               - requirements-txt
               - --output-file
               - requirements.txt
+manifests:
+  kustomize:
+    paths:
+      - manifests
+deploy:
+  cloudrun:
+    projectid: shikanime-studio-labs
+    region: europe-west9

@@ -1,6 +1,14 @@
 {
   perSystem =
     { pkgs, ... }:
+    let
+      google-cloud-sdk = pkgs.google-cloud-sdk.withExtraComponents [
+        pkgs.google-cloud-sdk.components.alpha
+        pkgs.google-cloud-sdk.components.beta
+        pkgs.google-cloud-sdk.components.cloud-run-proxy
+        pkgs.google-cloud-sdk.components.log-streaming
+      ];
+    in
     {
       treefmt = {
         projectRootFile = "flake.nix";
@@ -42,6 +50,7 @@
           tflint.enable = true;
         };
         packages = [
+          google-cloud-sdk
           pkgs.gh
           pkgs.skaffold
           pkgs.uv

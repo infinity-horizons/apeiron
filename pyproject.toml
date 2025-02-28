@@ -4,4 +4,4 @@ version = "0.1.0"
 description = "A multitask AI agent designed to streamline and automate operational workflows"
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = []
+dependencies = ["fastapi>=0.110.0", "uvicorn>=0.28.0"]
