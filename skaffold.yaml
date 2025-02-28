@@ -4,7 +4,7 @@ metadata:
   name: apeiron
 build:
   artifacts:
-    - image: europe-west9-docker.pkg.dev/shikanime-studio-labs/apeiron/run
+    - image: -docker.pkg.dev/shikanime-studio-labs/apeiron/run
       buildpacks:
         builder: heroku/builder:24
       hooks:

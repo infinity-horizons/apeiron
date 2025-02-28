@@ -3,6 +3,8 @@ kind: Service
 metadata:
   name: apeiron
   namespace: shikanime-studio-labs
+  labels:
+    cloud.googleapis.com/location: europe-west9
 spec:
   template:
     spec:
