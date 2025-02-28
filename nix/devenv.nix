@@ -54,6 +54,7 @@
           pkgs.gh
           pkgs.skaffold
           pkgs.uv
+          pkgs.yq
         ];
       };
     };
