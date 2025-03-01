@@ -26,3 +26,17 @@ resource "google_cloud_run_service_iam_member" "default" {
   role     = "roles/run.invoker"
   member   = "allUsers"
 }
+
+resource "google_cloud_run_domain_mapping" "default" {
+  location = google_cloud_run_service.default.location
+  project  = google_cloud_run_service.default.project
+  name     = var.domain
+
+  metadata {
+    namespace = google_cloud_run_service.default.project
+  }
+
+  spec {
+    route_name = google_cloud_run_service.default.name
+  }
+}
