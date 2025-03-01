@@ -4,16 +4,17 @@ from typing import Dict, Callable, Awaitable
 import uvicorn
 import os
 
+
+# Get Discord public key from environment variable
+DISCORD_PUBLIC_KEY = os.getenv("DISCORD_PUBLIC_KEY")
+
+
 app = FastAPI(title="Apeiron Discord Webhook API")
 
 
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
-
-
-# Get Discord public key from environment variable
-DISCORD_PUBLIC_KEY = os.getenv("DISCORD_PUBLIC_KEY")
 
 
 # Create a router for Discord webhook endpoints
