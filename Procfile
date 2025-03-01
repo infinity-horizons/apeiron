@@ -1,1 +1,1 @@
-web: uvicorn apeiron.server:app --host 0.0.0.0 --port 8080
+web: fastapi run apeiron/app.py --port 8080

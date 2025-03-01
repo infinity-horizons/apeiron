@@ -4,8 +4,23 @@ version = "0.1.0"
 description = "A multitask AI agent designed to streamline and automate operational workflows"
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = [
-  "discord-interactions>=0.4.0",
-  "fastapi>=0.110.0",
-  "uvicorn>=0.28.0",
+dependencies = ["fastapi[standard]>=0.110.0", "pynacl>=1.5.0"]
+
+[tool.ruff.lint]
+select = [
+  # pycodestyle
+  "E",
+  # Pyflakes
+  "F",
+  # pyupgrade
+  "UP",
+  # flake8-bugbear
+  "B",
+  # flake8-simplify
+  "SIM",
+  # isort
+  "I",
 ]
+
+[dependency-groups]
+dev = ["ruff>=0.9.9"]
