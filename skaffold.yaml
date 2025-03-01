@@ -6,13 +6,14 @@ build:
   artifacts:
     - image: europe-west9-docker.pkg.dev/shikanime-studio-labs/apeiron/run
       buildpacks:
-        builder: heroku/builder:24
+        builder: paketobuildpacks/builder-jammy-full
       hooks:
         before:
           - command:
               - uv
               - export
               - --quiet
+              - --no-hashes
               - --format
               - requirements-txt
               - --output-file
