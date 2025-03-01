@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException, Request, Depends, Header, Body
 from discord_interactions import verify_key, InteractionResponseType
 from typing import Annotated
 import os
-
+from pydantic import BaseModel, Field
 
 # Get Discord public key from environment variable
 DISCORD_PUBLIC_KEY = os.getenv("DISCORD_PUBLIC_KEY")
@@ -21,23 +21,27 @@ def verify_discord_key(
     x_signature_timestamp=Annotated[str, Header()],
     body=Annotated[bytes, Body()],
 ):
+    """
+    Verify the request is from Discord
+    """
     if not verify_key(
         body, x_signature_ed25519, x_signature_timestamp, DISCORD_PUBLIC_KEY
     ):
         raise HTTPException(status_code=401, detail="Invalid request signature")
 
-    return
+
+class DiscordInteraction(BaseModel):
+    type: int = Field(..., description="Type of interaction")
+    data: dict = Field(..., description="Data of interaction")
 
 
 @app.post("/webhooks/discord", dependencies=[Depends(verify_discord_key)])
-async def webhook_discord(request: Request):
-    signature = request.headers.get("X-Signature-Ed25519")
-    timestamp = request.headers.get("X-Signature-Timestamp")
-    body = await request.body()
-
-    if not verify_key(body, signature, timestamp, DISCORD_PUBLIC_KEY):
-        raise HTTPException(status_code=401, detail="Invalid request signature")
-
+async def webhook_discord(
+    request: Request, body: Annotated[DiscordInteraction, Body(embed=True)]
+):
+    """
+    Receive Discord webhook
+    """
     body = await request.json()
     match body.get("type"):
         case InteractionResponseType.PING:
