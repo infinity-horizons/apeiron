@@ -9,7 +9,7 @@ spec:
   template:
     spec:
       containers:
-        - name: apeiron
+        - name: run
           image: europe-west9-docker.pkg.dev/shikanime-studio-labs/apeiron/run
           command:
             - uvicorn
