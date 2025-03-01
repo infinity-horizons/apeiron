@@ -5,7 +5,7 @@ output "project" {
 
 output "region" {
   description = "The region where resources are deployed"
-  value       = "europe-west9"
+  value       = var.region
 }
 
 output "artifact_registry_repositories" {

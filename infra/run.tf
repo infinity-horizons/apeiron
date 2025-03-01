@@ -1,7 +1,7 @@
 resource "google_cloud_run_service" "default" {
   project  = var.project
   name     = var.name
-  location = "europe-west9"
+  location = var.region
 
   template {
     spec {

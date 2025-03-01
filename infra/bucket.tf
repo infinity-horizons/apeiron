@@ -4,6 +4,6 @@ module "cloud_storage" {
 
   project_id = var.project
   names      = ["cloudbuild"]
-  prefix     = "${var.project}-europe-west9"
-  location   = "europe-west9"
+  prefix     = "${var.project}-${var.region}"
+  location   = var.region
 }

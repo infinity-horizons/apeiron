@@ -15,3 +15,9 @@ variable "display_name" {
   type        = string
   default     = "Apeiron"
 }
+
+variable "region" {
+  description = "The GCP region where resources will be created"
+  type        = string
+  default     = "europe-west9"
+}
