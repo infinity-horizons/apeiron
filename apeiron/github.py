@@ -208,7 +208,9 @@ async def verify_github_signature(
     if not x_hub_signature_256:
         raise HTTPException(status_code=401, detail="No signature header")
     expected_signature = hmac.new(
-        GITHUB_WEBHOOK_SECRET.encode(), msg=await request.body(), digestmod=hashlib.sha256
+        GITHUB_WEBHOOK_SECRET.encode(),
+        msg=await request.body(),
+        digestmod=hashlib.sha256,
     ).hexdigest()
     if not hmac.compare_digest(f"sha256={expected_signature}", x_hub_signature_256):
         raise HTTPException(status_code=401, detail="Invalid signature")
