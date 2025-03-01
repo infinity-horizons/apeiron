@@ -3,13 +3,15 @@ from discord_interactions import verify_key, InteractionResponseType
 from typing import Annotated
 import os
 from pydantic import BaseModel, Field
+import logging
+
 
 # Get Discord public key from environment variable
 DISCORD_PUBLIC_KEY = os.getenv("DISCORD_PUBLIC_KEY")
 
 
 app = FastAPI(title="Apeiron Discord Webhook API")
-
+logger = logging.getLogger(__name__)
 
 @app.get("/health")
 async def health_check():
@@ -24,6 +26,7 @@ def verify_discord_key(
     """
     Verify the request is from Discord
     """
+    logger.debug("Verifying Discord signature %s", x_signature_ed25519)
     if not verify_key(
         body, x_signature_ed25519, x_signature_timestamp, DISCORD_PUBLIC_KEY
     ):
@@ -43,6 +46,7 @@ async def webhook_discord(
     Receive Discord webhook
     """
     body = await request.json()
+    logger.info("Received Discord webhook request for type: %s", body.get("type"))
     match body.get("type"):
         case InteractionResponseType.PING:
             return {"type": InteractionResponseType.PONG}
