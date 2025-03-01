@@ -25,5 +25,4 @@ manifests:
       - manifests
 deploy:
   cloudrun:
-    projectid: shikanime-studio-labs
     region: europe-west9

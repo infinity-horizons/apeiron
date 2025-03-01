@@ -33,6 +33,7 @@ async def handle_discord_webhook(request: Request):
         case _:
             raise HTTPException(status_code=400, detail="Invalid request type")
 
+
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
