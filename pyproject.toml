@@ -5,7 +5,7 @@ description = "A multitask AI agent designed to streamline and automate operatio
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "discord-interactions>=0.4.0",
-    "fastapi>=0.110.0",
- "uvicorn>=0.28.0",
+  "discord-interactions>=0.4.0",
+  "fastapi>=0.110.0",
+  "uvicorn>=0.28.0",
 ]

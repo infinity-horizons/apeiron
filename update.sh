@@ -12,4 +12,4 @@ yq -i -y ".build.googleCloudBuild.bucket = \"${cloudbuild_bucket}\"" "$(dirname 
 
 # Update Kubernetes manifests
 bash "$(dirname "$0")/manifests/update.sh" 2>&1 |
-    sed "s/^/[manifests] /"
+  sed "s/^/[manifests] /"

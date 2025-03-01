@@ -10,4 +10,4 @@ artifact_registry=$(tofu -chdir="$(dirname "$0")/../infra" output -json artifact
 yq -i -y ".metadata.namespace = \"${project}\"" "$(dirname "$0")/knative-service.yaml"
 yq -i -y ".spec.template.spec.serviceAccountName = \"${service_account}\"" "$(dirname "$0")/knative-service.yaml"
 yq -i -y ".metadata.labels.\"cloud.googleapis.com/location\" = \"${region}\"" "$(dirname "$0")/knative-service.yaml"
-yq -i -y ".spec.template.spec.containers[0].image = \"${region}-docker.pkg.dev/${project}/${artifact_registry}\"" "$(dirname "$0")/knative-service.yaml"
+yq -i -y ".spec.template.spec.containers[0].image = \"${region}-docker.pkg.dev/${project}/${artifact_registry}/run\"" "$(dirname "$0")/knative-service.yaml"
