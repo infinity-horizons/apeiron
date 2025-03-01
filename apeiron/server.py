@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException, Request, Response
-from discord_interactions import verify_key
+from discord_interactions import verify_key, InteractionResponseType
 from typing import Dict, Callable, Awaitable
 import uvicorn
 import os
@@ -26,19 +26,12 @@ async def verify_discord_key(
 
 @app.post("/webhook/discord")
 async def handle_discord_webhook(request: Request):
-    try:
-        interaction_data = await request.json()
-        # Process the Discord interaction data
-        # This could be a command, component interaction, etc.
-
-        return {
-            "type": 1  # Type 1 is PONG for Discord interactions
-        }
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Failed to process webhook: {str(e)}"
-        )
-
+    body = await request.json()
+    match body.get("type"):
+        case InteractionResponseType.PING:
+            return {"type": InteractionResponseType.PONG}
+        case _:
+            raise HTTPException(status_code=400, detail="Invalid request type")
 
 @app.get("/health")
 async def health_check():
