@@ -13,7 +13,7 @@ spec:
           command:
             - uvicorn
           args:
-            - apeiron.main:app
+            - apeiron.server:app
             - --host
             - 0.0.0.0
       serviceAccountName: apeiron-run@shikanime-studio-labs.iam.gserviceaccount.com
