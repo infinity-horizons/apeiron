@@ -1,0 +1,20 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: apeiron
+  namespace: shikanime-studio-labs
+  labels:
+    cloud.googleapis.com/location: europe-west9
+spec:
+  template:
+    spec:
+      containers:
+        - name: run
+          image: europe-west9-docker.pkg.dev/shikanime-studio-labs/apeiron/run
+          env:
+            - name: DISCORD_PUBLIC_KEY
+              value: 81fba8fabea9d946704d0b0e16706405a9224ce788ab82eb0fb3e9e86c2ca807
+          ports:
+          - name: http1
+            containerPort: 8080
+      serviceAccountName: apeiron-run@shikanime-studio-labs.iam.gserviceaccount.com

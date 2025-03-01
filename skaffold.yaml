@@ -1,10 +1,10 @@
-apiVersion: skaffold/v4beta9
+apiVersion: skaffold/v4beta12
 kind: Config
 metadata:
   name: apeiron
 build:
   artifacts:
-    - image: apeiron
+    - image: europe-west9-docker.pkg.dev/shikanime-studio-labs/apeiron/run
       buildpacks:
         builder: heroku/builder:24
       hooks:
@@ -12,7 +12,18 @@ build:
           - command:
               - uv
               - export
+              - --quiet
+              - --no-hashes
               - --format
               - requirements-txt
               - --output-file
               - requirements.txt
+  googleCloudBuild:
+    bucket: shikanime-studio-labs-europe-west9-cloudbuild
+manifests:
+  kustomize:
+    paths:
+      - manifests
+deploy:
+  cloudrun:
+    region: europe-west9
