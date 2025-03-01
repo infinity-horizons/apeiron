@@ -1,7 +1,6 @@
-from fastapi import FastAPI, HTTPException, Request, Response, APIRouter
+from fastapi import FastAPI, HTTPException, Request, Depends, Header, Body
 from discord_interactions import verify_key, InteractionResponseType
-from typing import Dict, Callable, Awaitable
-import uvicorn
+from typing import Annotated
 import os
 
 
@@ -17,14 +16,21 @@ async def health_check():
     return {"status": "healthy"}
 
 
-# Create a router for Discord webhook endpoints
-discord_router = APIRouter()
-
-
-@discord_router.middleware("http")
-async def verify_discord_key(
-    request: Request, call_next: Callable[[Request], Awaitable[Response]]
+def verify_discord_key(
+    x_signature_ed25519=Annotated[str, Header()],
+    x_signature_timestamp=Annotated[str, Header()],
+    body=Annotated[bytes, Body()],
 ):
+    if not verify_key(
+        body, x_signature_ed25519, x_signature_timestamp, DISCORD_PUBLIC_KEY
+    ):
+        raise HTTPException(status_code=401, detail="Invalid request signature")
+
+    return
+
+
+@app.post("/webhooks/discord", dependencies=[Depends(verify_discord_key)])
+async def webhook_discord(request: Request):
     signature = request.headers.get("X-Signature-Ed25519")
     timestamp = request.headers.get("X-Signature-Timestamp")
     body = await request.body()
@@ -32,18 +38,9 @@ async def verify_discord_key(
     if not verify_key(body, signature, timestamp, DISCORD_PUBLIC_KEY):
         raise HTTPException(status_code=401, detail="Invalid request signature")
 
-    return await call_next(request)
-
-
-@discord_router.post("/webhook/discord")
-async def handle_discord_webhook(request: Request):
     body = await request.json()
     match body.get("type"):
         case InteractionResponseType.PING:
             return {"type": InteractionResponseType.PONG}
         case _:
             raise HTTPException(status_code=400, detail="Invalid request type")
-
-
-# Include the Discord router
-app.include_router(discord_router)
