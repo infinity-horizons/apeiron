@@ -19,3 +19,6 @@ yq -i -y \
 yq -i -y \
   ".deploy.cloudrun.region = \"${region}\"" \
   "$(dirname "$0")/skaffold.yaml"
+
+bash "manifests/update.sh" 2>&1 |
+  sed "s/^/[manifests] /"
