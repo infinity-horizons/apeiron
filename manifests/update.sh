@@ -4,7 +4,7 @@ output=$(tofu -chdir="$(dirname "$0")/../infra" output -json)
 project=$(echo "$output" | jq -r '.project.value')
 service_account=$(echo "$output" | jq -r '.service_account.value')
 region=$(echo "$output" | jq -r '.region.value')
-artifact_registry=$(echo "$output" | jq -r '.artifact_registry_repositories.value.default')
+artifact_registry=$(echo "$output" | jq -r '.artifact_registry_repository.value')
 
 yq -i -y \
   ".metadata.namespace = \"${project}\"" \
