@@ -2,6 +2,7 @@
 
 # Get Terraform outputs
 project=$(tofu -chdir="$(dirname "$0")/infra" output -raw project)
+region=$(tofu -chdir="$(dirname "$0")/infra" output -raw region)
 artifact_registry="$(tofu -chdir="$(dirname "$0")/infra" output -json artifact_registry_repositories | jq -r '.default')/run"
 cloudbuild_bucket=$(tofu -chdir="$(dirname "$0")/infra" output -json buckets | jq -r '.cloudbuild')
 

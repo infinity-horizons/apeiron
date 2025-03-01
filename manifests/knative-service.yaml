@@ -9,5 +9,5 @@ spec:
   template:
     spec:
       containers:
-        - image: apeiron
+        - image: europe-west9-docker.pkg.dev/shikanime-studio-labs/apeiron/run
       serviceAccountName: apeiron-run@shikanime-studio-labs.iam.gserviceaccount.com
