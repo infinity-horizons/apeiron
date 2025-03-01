@@ -8,16 +8,10 @@ cloudbuild_bucket=$(tofu -chdir=infra output -json buckets | jq -r '.cloudbuild'
 
 # Update Skaffold configuration
 yq -i -y \
-  ".build.artifacts[0].image = \"${region}-docker.pkg.dev/${project}/${artifact_registry}\"" \
-  "$(dirname "$0")/skaffold.yaml"
-yq -i -y \
-  ".build.googleCloudBuild.projectId = \"${project}\"" \
+  ".build.artifacts[0].image = \"${region}-docker.pkg.dev/${project}/${artifact_registry}/run\"" \
   "$(dirname "$0")/skaffold.yaml"
 yq -i -y \
   ".build.googleCloudBuild.bucket = \"${cloudbuild_bucket}\"" \
-  "$(dirname "$0")/skaffold.yaml"
-yq -i -y \
-  ".deploy.cloudrun.projectid = \"${project}\"" \
   "$(dirname "$0")/skaffold.yaml"
 yq -i -y \
   ".deploy.cloudrun.region = \"${region}\"" \
