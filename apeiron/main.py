@@ -30,11 +30,3 @@ async def handle_discord_webhook(request: Request):
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
-
-
-def main():
-    uvicorn.run(app, host="0.0.0.0", port=8000)
-
-
-if __name__ == "__main__":
-    main()

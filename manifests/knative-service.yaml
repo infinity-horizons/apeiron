@@ -9,5 +9,11 @@ spec:
   template:
     spec:
       containers:
-        - image: europe-west9-docker.pkg.dev/shikanime-studio-labs/apeiron/run
+        - image: europe-west9-docker.pkg.dev/shikanime-studio-labs/apeiron
+          command:
+            - uvicorn
+          args:
+            - apeiron.main:app
+            - --host
+            - 0.0.0.0
       serviceAccountName: apeiron-run@shikanime-studio-labs.iam.gserviceaccount.com
