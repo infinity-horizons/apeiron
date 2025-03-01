@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+set -o errexit
+set -o nounset
+set -o pipefail
+
 output=$(tofu -chdir=infra output -json)
 project=$(echo "$output" | jq -r '.project.value')
 region=$(echo "$output" | jq -r '.region.value')

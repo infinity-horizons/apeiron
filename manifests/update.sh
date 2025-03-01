@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+set -o errexit
+set -o nounset
+set -o pipefail
+
 output=$(tofu -chdir="$(dirname "$0")/../infra" output -json)
 project=$(echo "$output" | jq -r '.project.value')
 service_account=$(echo "$output" | jq -r '.service_account.value')
