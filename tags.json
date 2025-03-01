@@ -1,8 +1,0 @@
-{
-  "builds": [
-    {
-      "imageName": "europe-west9-docker.pkg.dev/shikanime-studio-labs/apeiron/run",
-      "tag": "europe-west9-docker.pkg.dev/shikanime-studio-labs/apeiron/run:d63a582@sha256:19cb52e1a7e5938c157f8bd3a8b8a587e0a455f10b5178832e6a1676d8929d5a"
-    }
-  ]
-}
