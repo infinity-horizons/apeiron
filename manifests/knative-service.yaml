@@ -11,8 +11,6 @@ spec:
       containers:
         - name: run
           image: europe-west9-docker.pkg.dev/shikanime-studio-labs/apeiron/run
-          command:
-            - uvicorn
           env:
             - name: DISCORD_PUBLIC_KEY
               value: 81fba8fabea9d946704d0b0e16706405a9224ce788ab82eb0fb3e9e86c2ca807
