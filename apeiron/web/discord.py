@@ -1,5 +1,4 @@
 import logging
-import os
 from enum import IntEnum
 from typing import Annotated, Optional
 
@@ -8,35 +7,7 @@ from nacl.exceptions import BadSignatureError
 from nacl.signing import VerifyKey
 from pydantic import BaseModel, Field
 
-DISCORD_PUBLIC_KEY = os.getenv("DISCORD_PUBLIC_KEY")
-
-router = APIRouter()
 logger = logging.getLogger(__name__)
-
-
-async def verify_discord_key(
-    request: Request,
-    x_signature_ed25519: Annotated[str | None, Header()] = None,
-    x_signature_timestamp: Annotated[str | None, Header()] = None,
-):
-    """
-    Verify the request is from Discord using Ed25519 signature
-    """
-    if x_signature_ed25519 is None or x_signature_timestamp is None:
-        logger.error("Missing required signature headers")
-        raise HTTPException(
-            status_code=400, detail="Missing required signature headers"
-        )
-    logger.debug("Verifying Discord signature %s", x_signature_ed25519)
-    if not DISCORD_PUBLIC_KEY:
-        raise HTTPException(status_code=500, detail="Discord public key not configured")
-    try:
-        verify_key = VerifyKey(bytes.fromhex(DISCORD_PUBLIC_KEY))
-        message = x_signature_timestamp.encode() + await request.body()
-        verify_key.verify(message, bytes.fromhex(x_signature_ed25519))
-    except (ValueError, BadSignatureError) as e:
-        logger.error("Failed to verify Discord signature: %s", str(e))
-        raise HTTPException(status_code=401, detail="Invalid request signature") from e
 
 
 class DiscordInteractionType(IntEnum):
@@ -180,14 +151,46 @@ class DiscordInteraction(BaseModel):
     guild_locale: str | None = None
 
 
-@router.post("/webhooks/discord", dependencies=[Depends(verify_discord_key)])
-async def webhook_discord_interactions(interaction: DiscordInteraction):
-    """
-    Receive Discord webhook
-    """
-    logger.debug("Received Discord webhook request for type: %s", interaction.type)
-    match interaction.type:
-        case DiscordInteractionType.PING:
-            return {"type": DiscordInteractionResponseType.PONG}
-        case _:
-            raise HTTPException(status_code=400, detail="Invalid request type")
+def create_router(token: str):
+    if not token:
+        raise ValueError("Discord public key not configured")
+
+    router = APIRouter()
+
+    async def verify_discord_key(
+        request: Request,
+        x_signature_ed25519: Annotated[str | None, Header()] = None,
+        x_signature_timestamp: Annotated[str | None, Header()] = None,
+    ):
+        """
+        Verify the request is from Discord using Ed25519 signature
+        """
+        if x_signature_ed25519 is None or x_signature_timestamp is None:
+            logger.error("Missing required signature headers")
+            raise HTTPException(
+                status_code=400, detail="Missing required signature headers"
+            )
+        logger.debug("Verifying Discord signature %s", x_signature_ed25519)
+        try:
+            verify_key = VerifyKey(bytes.fromhex(token))
+            message = x_signature_timestamp.encode() + await request.body()
+            verify_key.verify(message, bytes.fromhex(x_signature_ed25519))
+        except (ValueError, BadSignatureError) as e:
+            logger.error("Failed to verify Discord signature: %s", str(e))
+            raise HTTPException(
+                status_code=401, detail="Invalid request signature"
+            ) from e
+
+    @router.post("/webhooks/discord", dependencies=[Depends(verify_discord_key)])
+    async def webhook_discord_interactions(interaction: DiscordInteraction):
+        """
+        Receive Discord webhook
+        """
+        logger.debug("Received Discord webhook request for type: %s", interaction.type)
+        match interaction.type:
+            case DiscordInteractionType.PING:
+                return {"type": DiscordInteractionResponseType.PONG}
+            case _:
+                raise HTTPException(status_code=400, detail="Invalid request type")
+
+    return router
