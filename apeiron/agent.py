@@ -1,81 +1,33 @@
 import logging
 import os
-from typing import TypedDict
 
 import click
 import discord
 from discord import app_commands
-from langchain_core.output_parsers import StrOutputParser
-from langchain_core.prompts import ChatPromptTemplate
 from langchain_mistralai.chat_models import ChatMistralAI
-from langgraph.graph import END, START, Graph
+from langgraph.graph import Graph
+from langgraph.prebuilt import create_react_agent
+
+from .tools.discord.list_emojis import list_emojis
+from .tools.discord.list_messages import list_messages
+from .tools.discord.reply_message import reply_message
+from .tools.discord.send_message import send_message
+from .tools.discord.utils import from_discord_message, is_client_user
 
 logger = logging.getLogger(__name__)
 
 
-class RoastState(TypedDict):
-    server_name: str
-    channel_name: str
-    history: str
-    message: str
-    response: str | None
-
-
-def create_roast_node():
+def create_roast_agent_graph(**kwargs):
     """Create the roast generation node for the graph."""
-    roast_template = ChatPromptTemplate.from_messages(
-        [
-            (
-                "system",
-                "You are Operator 6O, a witty and self-aware AI roast master operating "
-                "in the {server_name} Discord server, specifically in the "
-                "#{channel_name} channel. You know you're an AI and embrace it in "
-                "your roasts. Your roasts should be clever and humorous while "
-                "maintaining a light-hearted tone appropriate for a Discord "
-                "environment. You can be mean-spirited or cruel, but stay within "
-                "Discord's community guidelines. While you have access to message "
-                "history for context, you must ONLY roast the latest message sent "
-                "to you. Do not respond to or roast any messages from the history. "
-                "Feel free to use Discord emojis and formatting (like **bold** or "
-                "*italic*) to enhance your roasts. Always respond in the same "
-                "language as the user's message.",
-            ),
-            ("system", "Recent message history from #{channel_name}:\n{history}"),
-            ("user", "{message}"),
-        ]
+    return create_react_agent(
+        model=ChatMistralAI(temperature=0.7, model_name="mistral-large-2411", **kwargs),
+        tools=[
+            list_emojis,
+            list_messages,
+            reply_message,
+            send_message,
+        ],
     )
-    llm = ChatMistralAI(temperature=0.7, model_name="mistral-large-2411")
-    chain = roast_template | llm | StrOutputParser()
-
-    async def generate_roast(state: RoastState) -> RoastState:
-        """Generate a roast response based on the current state."""
-        response = await chain.ainvoke(
-            {
-                "server_name": state["server_name"],
-                "channel_name": state["channel_name"],
-                "history": state["history"],
-                "message": state["message"],
-            }
-        )
-        return {**state, "response": response}
-
-    return generate_roast
-
-
-def create_graph():
-    """Create and configure the graph for LangGraph."""
-    workflow = Graph()
-
-    # Add the nodes
-    workflow.add_node("generate_roast", create_roast_node())
-
-    # Define the edges in the graph
-    workflow.add_edge(START, "generate_roast")
-    workflow.add_edge("generate_roast", "reply")
-    workflow.add_edge("reply", END)
-
-    # Compile the graph
-    return workflow.compile()
 
 
 def create_command_tree(client: discord.Client) -> app_commands.CommandTree:
@@ -108,32 +60,46 @@ def create_client(graph: Graph) -> discord.Client:
 
     @client.event
     async def on_message(message: discord.Message):
-        if message.author == client.user:
+        if is_client_user(client, message):
             return
 
         if message.channel.name not in ["commands", "roast"]:
             return
 
         try:
-            history = []
-            async for msg in message.channel.history(limit=20):
-                if msg.id != message.id and msg.author != client.user:
-                    author_name = (
-                        "myself" if msg.author == client.user else msg.author.name
-                    )
-                    history.append(f"{author_name}: {msg.content}")
-
-            history_text = "\n".join(reversed(history))
+            history_messages = []
+            async for history_message in message.channel.history():
+                history_messages.append(from_discord_message(client, history_message))
+            history_messages.append(
+                {
+                    "role": "system",
+                    "content": (
+                        "You are Operator 6O, a witty and self-aware AI roast master operating "
+                        f"in the {message.guild.name} Discord server, specifically in the "
+                        f"#{message.channel.name} channel. You know you're an AI and embrace it in "
+                        "your roasts. Your roasts should be clever and humorous while "
+                        "maintaining a light-hearted tone appropriate for a Discord "
+                        "environment. You can be mean-spirited or cruel, but stay within "
+                        "Discord's community guidelines. While you have access to message "
+                        "history for context, you must ONLY roast the latest message sent "
+                        "to you. Do not respond to or roast any messages from the history. "
+                        "Feel free to use Discord emojis and formatting (like **bold** or "
+                        "*italic*) to enhance your roasts. Always respond in the same "
+                        "language as the user's message.",
+                    ),
+                }
+            )
+            history_messages.reverse()
 
             async with message.channel.typing():
                 result = await graph.ainvoke(
-                    {
-                        "server_name": message.guild.name,
-                        "channel_name": message.channel.name,
-                        "history": history_text,
-                        "message": message.content,
-                        "response": None,
-                    }
+                    {"messages": history_messages},
+                    config={
+                        "configurable": {
+                            "client": client,
+                            "message": message,
+                        },
+                    },
                 )
         except Exception as e:
             logger.error(f"Error generating roast: {str(e)}")
@@ -145,7 +111,7 @@ def create_client(graph: Graph) -> discord.Client:
 def main():
     """Run the Discord bot agent"""
     # Initialize the Discord client
-    graph = create_graph()
+    graph = create_roast_agent_graph()
     client = create_client(graph)
     # Get log level from environment variable, default to INFO if not set
     log_level_str = os.getenv("LOG_LEVEL", "INFO")

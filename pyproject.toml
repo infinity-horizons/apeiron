@@ -13,6 +13,7 @@ dependencies = [
   "langchain-core>=0.3.40",
   "discord>=2.3.2",
   "langgraph>=0.3.2",
+  "pydantic>=2.10.6",
 ]
 
 [tool.ruff.lint]
