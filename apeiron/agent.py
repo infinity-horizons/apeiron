@@ -7,6 +7,7 @@ from discord import app_commands
 from langchain_mistralai.chat_models import ChatMistralAI
 from langgraph.graph import Graph
 from langgraph.prebuilt import create_react_agent
+from langchain_core.globals import set_debug, set_verbose
 
 from .tools.discord.list_emojis import list_emojis
 from .tools.discord.list_messages import list_messages
@@ -69,6 +70,8 @@ def create_client(graph: Graph) -> discord.Client:
         try:
             history_messages = []
             async for history_message in message.channel.history():
+                if history_message.content == "":
+                    continue
                 history_messages.append(from_discord_message(client, history_message))
             history_messages.append(
                 {
@@ -85,7 +88,7 @@ def create_client(graph: Graph) -> discord.Client:
                         "to you. Do not respond to or roast any messages from the history. "
                         "Feel free to use Discord emojis and formatting (like **bold** or "
                         "*italic*) to enhance your roasts. Always respond in the same "
-                        "language as the user's message.",
+                        "language as the user's message."
                     ),
                 }
             )
@@ -96,23 +99,37 @@ def create_client(graph: Graph) -> discord.Client:
                     {"messages": history_messages},
                     config={
                         "configurable": {
+                            "thread_id": message.channel.id,
                             "client": client,
                             "message": message,
                         },
                     },
                 )
+                await message.channel.send(result["messages"][-1].content)
         except Exception as e:
             logger.error(f"Error generating roast: {str(e)}")
 
     return client
 
-
 @click.command()
-def main():
+@click.option(
+    "--debug", is_flag=True, help="Enable debug logging", default=False
+)
+@click.option(
+    "--verbose", is_flag=True, help="Enable verbose logging", default=False
+)
+def main(debug: bool, verbose: bool):
     """Run the Discord bot agent"""
+    # Set debug and verbose modes if flags are enabled
+    if debug:
+        set_debug(True)
+    if verbose:
+        set_verbose(True)
+
     # Initialize the Discord client
     graph = create_roast_agent_graph()
     client = create_client(graph)
+
     # Get log level from environment variable, default to INFO if not set
     log_level_str = os.getenv("LOG_LEVEL", "INFO")
     level_names = logging.getLevelNamesMapping()
@@ -130,5 +147,4 @@ def main():
 
 
 if __name__ == "__main__":
-    # Set up logging configuration
     main()
