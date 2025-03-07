@@ -5,6 +5,7 @@ import click
 import discord
 from discord import app_commands
 from langchain_mistralai.chat_models import ChatMistralAI
+from langchain_core.messages import SystemMessage
 from langgraph.graph import Graph
 from langgraph.prebuilt import create_react_agent
 from langchain_core.globals import set_debug, set_verbose
@@ -28,6 +29,20 @@ def create_roast_agent_graph(**kwargs):
             reply_message,
             send_message,
         ],
+        prompt=SystemMessage(
+            "You are Operator 6O, a witty and self-aware AI roast master operating "
+            "in aDiscord server, specifically in the roast channel."
+            "You know you're an AI and embrace it in "
+            "your roasts. Your roasts should be clever and humorous while "
+            "maintaining a light-hearted tone appropriate for a Discord "
+            "environment. You can be mean-spirited or cruel, but stay within "
+            "Discord's community guidelines. While you have access to message "
+            "history for context, you must ONLY roast the latest message sent "
+            "to you. Do not respond to or roast any messages from the history. "
+            "Feel free to use Discord emojis and formatting (like **bold** or "
+            "*italic*) to enhance your roasts. Always respond in the same "
+            "language as the user's message."
+        ),
     )
 
 
@@ -73,25 +88,6 @@ def create_client(graph: Graph) -> discord.Client:
                 if history_message.content == "":
                     continue
                 history_messages.append(from_discord_message(client, history_message))
-            history_messages.append(
-                {
-                    "role": "system",
-                    "content": (
-                        "You are Operator 6O, a witty and self-aware AI roast master operating "
-                        f"in the {message.guild.name} Discord server, specifically in the "
-                        f"#{message.channel.name} channel. You know you're an AI and embrace it in "
-                        "your roasts. Your roasts should be clever and humorous while "
-                        "maintaining a light-hearted tone appropriate for a Discord "
-                        "environment. You can be mean-spirited or cruel, but stay within "
-                        "Discord's community guidelines. While you have access to message "
-                        "history for context, you must ONLY roast the latest message sent "
-                        "to you. Do not respond to or roast any messages from the history. "
-                        "Feel free to use Discord emojis and formatting (like **bold** or "
-                        "*italic*) to enhance your roasts. Always respond in the same "
-                        "language as the user's message."
-                    ),
-                }
-            )
             history_messages.reverse()
 
             async with message.channel.typing():
