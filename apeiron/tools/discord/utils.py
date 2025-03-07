@@ -1,5 +1,3 @@
-from typing import TYPE_CHECKING
-
 from discord import Client, Message
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.messages import BaseMessage

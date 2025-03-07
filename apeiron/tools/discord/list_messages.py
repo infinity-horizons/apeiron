@@ -1,11 +1,7 @@
-from typing import TYPE_CHECKING
-
 from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import tool
 from langchain_core.tools.base import ToolException
-
-if TYPE_CHECKING:
-    from discord.errors import Forbidden, NotFound
+from discord.errors import Forbidden, NotFound
 
 
 @tool
