@@ -141,6 +141,7 @@ def create_client(graph: Graph) -> discord.Client:
     return client
 
 
+
 @click.command()
 def main():
     """Run the Discord bot agent"""
