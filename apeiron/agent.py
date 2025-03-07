@@ -111,13 +111,10 @@ def create_client(graph: Graph) -> discord.Client:
 
     return client
 
+
 @click.command()
-@click.option(
-    "--debug", is_flag=True, help="Enable debug logging", default=False
-)
-@click.option(
-    "--verbose", is_flag=True, help="Enable verbose logging", default=False
-)
+@click.option("--debug", is_flag=True, help="Enable debug logging", default=False)
+@click.option("--verbose", is_flag=True, help="Enable verbose logging", default=False)
 def main(debug: bool, verbose: bool):
     """Run the Discord bot agent"""
     # Set debug and verbose modes if flags are enabled
