@@ -52,6 +52,8 @@
         packages = [
           google-cloud-sdk
           pkgs.gh
+          pkgs.kubectl
+          pkgs.kustomize
           pkgs.skaffold
           pkgs.uv
           pkgs.yq
