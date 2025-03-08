@@ -4,31 +4,24 @@ import os
 import click
 import discord
 from discord import app_commands
-from langchain_mistralai.chat_models import ChatMistralAI
+from langchain_core.globals import set_debug, set_verbose
 from langchain_core.messages import SystemMessage
+from langchain_mistralai.chat_models import ChatMistralAI
 from langgraph.graph import Graph
 from langgraph.prebuilt import create_react_agent
-from langchain_core.globals import set_debug, set_verbose
 
-from .tools.discord.list_emojis import list_emojis
-from .tools.discord.list_messages import list_messages
-from .tools.discord.reply_message import reply_message
-from .tools.discord.send_message import send_message
-from .tools.discord.utils import from_discord_message, is_client_user
+from .chat_message_histories.discord import DiscordChatMessageHistory
+from .toolkits.discord.toolkit import DiscordToolkit
+from .tools.discord.utils import is_client_user
 
 logger = logging.getLogger(__name__)
 
 
-def create_roast_agent_graph(**kwargs):
+def create_roast_agent_graph(discord_toolkit: DiscordToolkit, **kwargs):
     """Create the roast generation node for the graph."""
     return create_react_agent(
-        model=ChatMistralAI(temperature=0.7, model_name="mistral-large-2411", **kwargs),
-        tools=[
-            list_emojis,
-            list_messages,
-            reply_message,
-            send_message,
-        ],
+        model=ChatMistralAI(temperature=0.7, model_name="pixtral-12b-2409", **kwargs),
+        tools=discord_toolkit.get_tools(),
         prompt=SystemMessage(
             "You are Operator 6O, a witty and self-aware AI roast master operating "
             "in aDiscord server, specifically in the roast channel."
@@ -65,9 +58,8 @@ def create_command_tree(client: discord.Client) -> app_commands.CommandTree:
     return tree
 
 
-def create_client(graph: Graph) -> discord.Client:
+def create_bot(client: discord.Client, graph: Graph) -> discord.Client:
     """Create and configure the Discord client with all intents."""
-    client = discord.Client(intents=discord.Intents.all())
     tree = create_command_tree(client)
 
     @client.event
@@ -83,21 +75,15 @@ def create_client(graph: Graph) -> discord.Client:
             return
 
         try:
-            history_messages = []
-            async for history_message in message.channel.history():
-                if history_message.content == "":
-                    continue
-                history_messages.append(from_discord_message(client, history_message))
-            history_messages.reverse()
+            chat_history = DiscordChatMessageHistory(client)
+            await chat_history.load_messages(message.channel.id)
 
             async with message.channel.typing():
                 result = await graph.ainvoke(
-                    {"messages": history_messages},
+                    {"messages": chat_history.messages},
                     config={
                         "configurable": {
                             "thread_id": message.channel.id,
-                            "client": client,
-                            "message": message,
                         },
                     },
                 )
@@ -120,8 +106,10 @@ def main(debug: bool, verbose: bool):
         set_verbose(True)
 
     # Initialize the Discord client
-    graph = create_roast_agent_graph()
-    client = create_client(graph)
+    discord_client = discord.Client(intents=discord.Intents.all())
+    discord_toolkit = DiscordToolkit(client=discord_client)
+    graph = create_roast_agent_graph(discord_toolkit=discord_toolkit)
+    bot = create_bot(discord_client, graph)
 
     # Get log level from environment variable, default to INFO if not set
     log_level_str = os.getenv("LOG_LEVEL", "INFO")
@@ -135,8 +123,8 @@ def main(debug: bool, verbose: bool):
     if not token:
         raise ValueError("DISCORD_TOKEN environment variable is not set")
 
-    logging.basicConfig(level=log_level)
-    client.run(token, log_level=log_level)
+    discord.utils.setup_logging(level=log_level)
+    bot.run(token)
 
 
 if __name__ == "__main__":
