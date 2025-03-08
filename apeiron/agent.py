@@ -8,7 +8,7 @@ from langchain_core.globals import set_debug, set_verbose
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import trim_messages
 from langchain_mistralai.chat_models import ChatMistralAI
-from langgraph.graph import Pregel
+from langgraph.pregel import Pregel
 
 from .agents.roast import create_agent
 from .chat_message_histories.discord import DiscordChatMessageHistory
