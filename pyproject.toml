@@ -14,6 +14,7 @@ dependencies = [
   "discord>=2.3.2",
   "langgraph>=0.3.2",
   "pydantic>=2.10.6",
+  "transformers>=4.49.0",
 ]
 
 [tool.ruff.lint]

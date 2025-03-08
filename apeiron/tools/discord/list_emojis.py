@@ -1,4 +1,5 @@
 from discord.errors import Forbidden, NotFound
+from langchain_core.runnables import RunnableConfig
 from langchain_core.tools.base import ToolException
 from pydantic import BaseModel, Field
 
@@ -18,10 +19,7 @@ class DiscordListEmojisTool(BaseDiscordTool):
     description: str = "List all emojis in a Discord guild"
     args_schema: type[ListEmojisSchema] = ListEmojisSchema
 
-    async def _arun(
-        self,
-        guild_id: int,
-    ) -> list[dict]:
+    async def _arun(self, guild_id: int, run_config: RunnableConfig) -> list[dict]:
         try:
             guild = await self.client.fetch_guild(guild_id)
             emojis = await guild.fetch_emojis()

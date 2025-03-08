@@ -5,7 +5,8 @@ import click
 import discord
 from discord import app_commands
 from langchain_core.globals import set_debug, set_verbose
-from langchain_core.messages import SystemMessage
+from langchain_core.language_models.chat_models import BaseChatModel
+from langchain_core.messages import SystemMessage, trim_messages
 from langchain_mistralai.chat_models import ChatMistralAI
 from langgraph.graph import Graph
 from langgraph.prebuilt import create_react_agent
@@ -17,14 +18,16 @@ from .tools.discord.utils import is_client_user
 logger = logging.getLogger(__name__)
 
 
-def create_roast_agent_graph(discord_toolkit: DiscordToolkit, **kwargs):
+def create_roast_agent_graph(
+    discord_toolkit: DiscordToolkit, model: BaseChatModel, **kwargs
+):
     """Create the roast generation node for the graph."""
     return create_react_agent(
-        model=ChatMistralAI(temperature=0.7, model_name="pixtral-12b-2409", **kwargs),
+        model=model,
         tools=discord_toolkit.get_tools(),
         prompt=SystemMessage(
             "You are Operator 6O, a witty and self-aware AI roast master operating "
-            "in aDiscord server, specifically in the roast channel."
+            "in a Discord server, specifically in the roast channel."
             "You know you're an AI and embrace it in "
             "your roasts. Your roasts should be clever and humorous while "
             "maintaining a light-hearted tone appropriate for a Discord "
@@ -58,7 +61,9 @@ def create_command_tree(client: discord.Client) -> app_commands.CommandTree:
     return tree
 
 
-def create_bot(client: discord.Client, graph: Graph) -> discord.Client:
+def create_bot(
+    client: discord.Client, model: BaseChatModel, graph: Graph
+) -> discord.Client:
     """Create and configure the Discord client with all intents."""
     tree = create_command_tree(client)
 
@@ -78,13 +83,21 @@ def create_bot(client: discord.Client, graph: Graph) -> discord.Client:
             chat_history = DiscordChatMessageHistory(client)
             await chat_history.load_messages(message.channel.id)
 
+            messages = trim_messages(
+                chat_history.messages,
+                token_counter=model,
+                strategy="last",
+                max_tokens=2000,
+                start_on="human",
+                end_on=("human", "tool"),
+                include_system=True,
+            )
+
             async with message.channel.typing():
                 result = await graph.ainvoke(
-                    {"messages": chat_history.messages},
+                    {"messages": messages},
                     config={
-                        "configurable": {
-                            "thread_id": message.channel.id,
-                        },
+                        "configurable": {"message": message},
                     },
                 )
                 await message.channel.send(result["messages"][-1].content)
@@ -105,11 +118,17 @@ def main(debug: bool, verbose: bool):
     if verbose:
         set_verbose(True)
 
+    # Initialize the MistralAI model
+    model = ChatMistralAI(temperature=0.7, model_name="pixtral-12b-2409")
+
     # Initialize the Discord client
     discord_client = discord.Client(intents=discord.Intents.all())
     discord_toolkit = DiscordToolkit(client=discord_client)
-    graph = create_roast_agent_graph(discord_toolkit=discord_toolkit)
-    bot = create_bot(discord_client, graph)
+    graph = create_roast_agent_graph(
+        discord_toolkit=discord_toolkit,
+        model=model,
+    )
+    bot = create_bot(client=discord_client, model=model, graph=graph)
 
     # Get log level from environment variable, default to INFO if not set
     log_level_str = os.getenv("LOG_LEVEL", "INFO")
