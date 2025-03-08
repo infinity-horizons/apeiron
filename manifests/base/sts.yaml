@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: apeiron
+  namespace: apeiron
+spec:
+  serviceName: apeiron-headless
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: apeiron
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: apeiron
+    spec:
+      containers:
+        - name: apeiron
+          image: apeiron
+          command:
+            - python
+            - -m
+            - apeiron.agent

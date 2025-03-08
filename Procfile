@@ -1,1 +1,0 @@
-web: fastapi run apeiron/app.py --port 8080

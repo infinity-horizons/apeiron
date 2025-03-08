@@ -4,7 +4,7 @@ metadata:
   name: apeiron
 build:
   artifacts:
-    - image: europe-west1-docker.pkg.dev/shikanime-studio-labs/apeiron/run
+    - image: apeiron
       buildpacks:
         builder: heroku/builder:24
       hooks:
@@ -18,12 +18,7 @@ build:
               - requirements-txt
               - --output-file
               - requirements.txt
-  googleCloudBuild:
-    bucket: shikanime-studio-labs-europe-west1-cloudbuild
 manifests:
   kustomize:
     paths:
-      - manifests
-deploy:
-  cloudrun:
-    region: europe-west1
+      - manifests/base
