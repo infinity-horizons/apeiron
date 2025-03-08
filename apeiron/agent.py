@@ -52,7 +52,12 @@ def create_bot(
         if is_client_user(client, message):
             return
 
+        if not client.user.mentioned_in(message):
+            logger.debug(f"Message not mentioning bot: {message.content}")
+            return
+
         if message.channel.name not in ["commands", "roast"]:
+            logger.debug(f"Message not in roast channel: {message.content}")
             return
 
         try:
@@ -81,6 +86,7 @@ def create_bot(
             logger.error(f"Error generating roast: {str(e)}")
 
     return client
+
 
 def init(debug: bool, verbose: bool):
     # Set debug and verbose modes if flags are enabled
