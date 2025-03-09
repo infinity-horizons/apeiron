@@ -11,4 +11,4 @@ labels:
   - pairs:
       app.kubernetes.io/component: agent
       app.kubernetes.io/name: apeiron
-      app.kubernetes.io/part-of: apeiron
+      app.kubernetes.io/part-of: baguetto
