@@ -29,10 +29,6 @@ def create_bot(bot: discord.Bot, model: BaseChatModel, pregel: Pregel):
             logger.debug(f"Message not mentioning bot: {message.content}")
             return
 
-        if message.channel.name not in ["commands", "roast"]:
-            logger.debug(f"Message not in roast channel: {message.content}")
-            return
-
         try:
             chat_history = DiscordChatMessageHistory(bot)
             await chat_history.load_messages(message.channel.id)
@@ -80,19 +76,33 @@ def init(debug: bool, verbose: bool):
 
 
 @click.command()
+@click.option("--feature-gates", help="Enable feature gates", default="")
 @click.option("--debug", is_flag=True, help="Enable debug logging", default=False)
 @click.option("--verbose", is_flag=True, help="Enable verbose logging", default=False)
-def main(debug: bool, verbose: bool):
+def main(
+    feature_gates: str,
+    debug: bool,
+    verbose: bool,
+):
     """Run the Discord bot agent"""
     init(debug, verbose)
+
+    # Parse feature gates
+    feature_gates_dict = {}
+    if feature_gates:
+        for feature_gate in feature_gates.split(","):
+            key, value = feature_gate.split("=")
+            feature_gates_dict[key] = bool(value)
 
     # Initialize the MistralAI model
     model = ChatMistralAI(temperature=0.7, model_name="pixtral-12b-2409")
 
     # Initialize the Discord client
     discord_bot = discord.Bot(intents=discord.Intents.default())
-    discord_toolkit = DiscordToolkit(client=discord_bot)
-    graph = create_agent(tools=discord_toolkit.get_tools(), model=model)
+    tools = []
+    if feature_gates_dict.get("AgentDiscordToolkit", False):
+        tools = discord_toolkit.get_tools()
+    graph = create_agent(tools=tools, model=model)
     bot = create_bot(bot=discord_bot, model=model, pregel=graph)
 
     token = os.getenv("DISCORD_TOKEN")
