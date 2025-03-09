@@ -10,7 +10,4 @@ build:
 manifests:
   kustomize:
     paths:
-      - manifests
-deploy:
-  cloudrun:
-    region: europe-west1
+      - manifests/base
