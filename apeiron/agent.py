@@ -9,7 +9,7 @@ from langchain_core.messages import trim_messages
 from langgraph.pregel import Pregel
 
 from .agents.roast import create_agent
-from .chat_message_histories.discord import DiscordChatMessageHistory
+from .chat_message_histories.discord import DiscordChannelChatMessageHistory
 from .chat_models import create_chat_model
 from .toolkits.discord.toolkit import DiscordToolkit
 from .tools.discord.utils import is_client_user
@@ -31,7 +31,7 @@ def create_bot(bot: discord.Bot, model: BaseChatModel, pregel: Pregel):
             return
 
         try:
-            chat_history = DiscordChatMessageHistory(bot)
+            chat_history = DiscordChannelChatMessageHistory(bot)
             await chat_history.load_messages(message.channel.id)
 
             messages = trim_messages(
@@ -47,9 +47,7 @@ def create_bot(bot: discord.Bot, model: BaseChatModel, pregel: Pregel):
             async with message.channel.typing():
                 result = await pregel.ainvoke(
                     {"messages": messages},
-                    config={
-                        "configurable": {"message": message},
-                    },
+                    config={"configurable": {"message": message}},
                 )
                 await message.channel.send(result["messages"][-1].content)
         except Exception as e:

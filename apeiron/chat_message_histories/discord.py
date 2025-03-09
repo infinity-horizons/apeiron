@@ -3,7 +3,7 @@ from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
 
 
-class DiscordChatMessageHistory(BaseChatMessageHistory):
+class DiscordChannelChatMessageHistory(BaseChatMessageHistory):
     """Chat message history that stores Discord messages."""
 
     def __init__(self, discord_client: Client) -> None:
