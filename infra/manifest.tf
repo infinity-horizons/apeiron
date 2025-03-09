@@ -1,7 +1,8 @@
 resource "local_file" "infinity-horizons" {
   filename = "${path.module}/.terraform/tmp/manifest/infinity-horizons.yaml"
   content = templatefile("${path.module}/templates/manifests/infinity-horizons.yaml.tftpl", {
-    discord_token = var.apeiron.discord_token
+    mistral_api_key = var.apeiron.mistral_api_key
+    discord_token   = var.apeiron.discord_token
   })
   file_permission = "0600"
 }
