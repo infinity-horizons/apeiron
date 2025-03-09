@@ -23,3 +23,8 @@ spec:
                 secretKeyRef:
                   name: apeiron
                   key: discord_token
+            - name: MISTRAL_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: apeiron
+                  key: mistral_api_key
