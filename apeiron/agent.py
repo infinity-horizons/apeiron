@@ -8,7 +8,7 @@ from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import trim_messages
 from langgraph.pregel import Pregel
 
-from .agents.roast import create_agent
+from .agents.operator_6o import create_agent
 from .chat_message_histories.discord import DiscordChannelChatMessageHistory
 from .chat_models import create_chat_model
 from .toolkits.discord.toolkit import DiscordToolkit
