@@ -18,6 +18,32 @@ from .utils import parse_feature_gates
 logger = logging.getLogger(__name__)
 
 
+def create_thread_id(message: discord.Message):
+    """Create a thread ID from a Discord message."""
+    if message.guild is None:
+        return "/".join([
+            "guild",
+            "__private__",
+            "channel",
+            str(message.author.id),
+        ])
+    if message.thread is None:
+        return "/".join([
+            "guild",
+            str(message.guild.id),
+            "channel",
+            str(message.channel.id),
+        ])
+    return "/".join([
+        "guild",
+        str(message.guild.id),
+        "channel",
+        str(message.channel.id),
+        "thread",
+        str(message.thread.id),
+    ])
+
+
 def create_bot(bot: discord.Bot, model: BaseChatModel, pregel: Pregel):
     """Create and configure the Discord client with all intents."""
 
@@ -47,7 +73,12 @@ def create_bot(bot: discord.Bot, model: BaseChatModel, pregel: Pregel):
             async with message.channel.typing():
                 result = await pregel.ainvoke(
                     {"messages": messages},
-                    config={"configurable": {"message": message}},
+                    config={
+                        "configurable": {
+                            "thread_id": create_thread_id(message),
+                            "message": message,
+                        }
+                    },
                 )
                 await message.channel.send(result["messages"][-1].content)
         except Exception as e:
