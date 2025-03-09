@@ -12,7 +12,7 @@ from .agents.roast import create_agent
 from .chat_message_histories.discord import DiscordChatMessageHistory
 from .toolkits.discord.toolkit import DiscordToolkit
 from .tools.discord.utils import is_client_user
-from .chat_models.mistral import get_model
+from .chat_models.mistral import ChatMistralAI
 
 logger = logging.getLogger(__name__)
 
@@ -78,7 +78,7 @@ def init(debug: bool, verbose: bool):
 def get_agent_model(agent_provider: str, agent_model: str) -> BaseChatModel:
     """Initialize the agent model based on the provider and model name."""
     if agent_provider == "mistralai":
-        return get_model(model_name=agent_model)
+        return ChatMistralAI(model_name=agent_model)
     else:
         raise ValueError(f"Invalid agent provider: {agent_provider}")
 
@@ -119,7 +119,7 @@ def main(
     discord_bot = discord.Bot(intents=discord.Intents.default())
     tools = []
     if feature_gates_dict.get("AgentDiscordToolkit", False):
-        tools = discord_toolkit.get_tools()
+        tools = DiscordToolkit(client=discord_bot).get_tools()
     graph = create_agent(tools=tools, model=model)
     bot = create_bot(bot=discord_bot, model=model, pregel=graph)
 
