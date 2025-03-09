@@ -74,12 +74,31 @@ def init(debug: bool, verbose: bool):
 
     logging.basicConfig(level=log_level)
 
+def get_agent_model(agent_provider: str, agent_model: str) -> BaseChatModel:
+    """Initialize the agent model based on the provider and model name."""
+    if agent_provider == "mistralai":
+        return ChatMistralAI(model_name=agent_model)
+    else:
+        raise ValueError(f"Invalid agent provider: {agent_provider}")
+
+def parse_feature_gates(feature_gates_str: str) -> dict[str, bool]:
+    """Parse feature gates from a string into a dictionary."""
+    feature_gates_dict = {}
+    for feature_gate in feature_gates_str.split(","):
+        feature_gate = feature_gate.strip()
+        if feature_gate:
+            feature_gates_dict[feature_gate] = True
+    return feature_gates_dict
 
 @click.command()
+@click.option("--agent-provider", help="Agent provider", default="mistralai")
+@click.option("--agent-model", help="Agent model", default="pixtral-12b-2409")
 @click.option("--feature-gates", help="Enable feature gates", default="")
 @click.option("--debug", is_flag=True, help="Enable debug logging", default=False)
 @click.option("--verbose", is_flag=True, help="Enable verbose logging", default=False)
 def main(
+    agent_provider: str,
+    agent_model: str,
     feature_gates: str,
     debug: bool,
     verbose: bool,
@@ -88,14 +107,10 @@ def main(
     init(debug, verbose)
 
     # Parse feature gates
-    feature_gates_dict = {}
-    if feature_gates:
-        for feature_gate in feature_gates.split(","):
-            key, value = feature_gate.split("=")
-            feature_gates_dict[key] = bool(value)
+    feature_gates_dict = parse_feature_gates(feature_gates)
 
     # Initialize the MistralAI model
-    model = ChatMistralAI(temperature=0.7, model_name="pixtral-12b-2409")
+    model = get_agent_model(agent_provider, agent_model)
 
     # Initialize the Discord client
     discord_bot = discord.Bot(intents=discord.Intents.default())
