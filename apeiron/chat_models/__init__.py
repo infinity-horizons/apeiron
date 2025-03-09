@@ -1,4 +1,4 @@
-from langchain_core.chat_models import BaseChatModel
+from langchain_core.language_models import BaseChatModel
 
 from .mistral import create_chat_model as create_chat_model_mistral
 
