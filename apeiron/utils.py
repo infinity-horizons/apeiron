@@ -1,3 +1,6 @@
+import discord
+
+
 def parse_feature_gates(feature_gates_str: str) -> dict[str, bool]:
     """Parse feature gates from a string into a dictionary."""
     feature_gates_dict = {}
