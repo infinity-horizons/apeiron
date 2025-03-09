@@ -64,13 +64,17 @@ def load_prompt(path: PathLike) -> ChatPromptTemplate:
 
     examples = prompt_config.get("examples", [])
 
-    return ChatPromptTemplate.from_messages(
-        messages
-        + [
+    # Only add FewShotChatMessagePromptTemplate if both example_prompt and examples exist
+    if example_prompt and examples:
+        messages.append(
             FewShotChatMessagePromptTemplate(
                 example_prompt=example_prompt,
                 examples=examples,
-            ),
-            MessagesPlaceholder(variable_name="messages"),
-        ]
-    )
+            )
+        )
+
+    # Always add MessagesPlaceholder
+    messages.append(MessagesPlaceholder(variable_name="messages"))
+
+    return ChatPromptTemplate.from_messages(messages)
+
