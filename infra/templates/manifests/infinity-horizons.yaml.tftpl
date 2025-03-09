@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: infinity-horizons
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: apeiron
+  namespace: infinity-horizons
+type: Opaque
+data:
+  discord_token: ${base64encode(discord_token)}
