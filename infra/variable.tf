@@ -1,7 +1,7 @@
-variable "discord" {
+variable "apeiron" {
   type = object({
-    token = string
+    discord_token = string
   })
-  description = "Discord application token"
+  description = "Apeiron application token"
   sensitive   = true
 }
