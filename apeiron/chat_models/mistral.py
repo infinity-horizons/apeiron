@@ -1,9 +1,7 @@
 from functools import cache
-from typing import Self
 
 from langchain_mistralai.chat_models import ChatMistralAI
 from mistral_common.tokens.tokenizers.mistral import MistralTokenizer
-from pydantic import model_validator
 
 
 @cache
