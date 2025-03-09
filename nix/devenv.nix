@@ -36,7 +36,10 @@
         };
         languages.python = {
           enable = true;
-          uv.enable = true;
+          uv = {
+            enable = true;
+            sync.enable = true;
+          };
         };
         cachix = {
           enable = true;

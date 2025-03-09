@@ -3,7 +3,6 @@ import os
 
 import click
 import discord
-from discord import app_commands
 from langchain_core.globals import set_debug, set_verbose
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import trim_messages
@@ -18,41 +17,15 @@ from .tools.discord.utils import is_client_user
 logger = logging.getLogger(__name__)
 
 
-def create_command_tree(client: discord.Client) -> app_commands.CommandTree:
-    """Create and configure the command tree."""
-    tree = app_commands.CommandTree(client)
-
-    @tree.command(name="help", description="Shows help information about commands")
-    async def help(interaction: discord.Interaction):
-        help_embed = discord.Embed(
-            title="Bot Help",
-            description="List of available commands:",
-            color=discord.Color.blue(),
-        )
-        help_embed.add_field(
-            name="/help", value="Shows this help message", inline=False
-        )
-        await interaction.response.send_message(embed=help_embed)
-
-    return tree
-
-
-def create_bot(
-    client: discord.Client, model: BaseChatModel, pregel: Pregel
-) -> discord.Client:
+def create_bot(bot: discord.Bot, model: BaseChatModel, pregel: Pregel):
     """Create and configure the Discord client with all intents."""
-    tree = create_command_tree(client)
 
-    @client.event
-    async def setup_hook():
-        await tree.sync()
-
-    @client.event
+    @bot.listen
     async def on_message(message: discord.Message):
-        if is_client_user(client, message):
+        if is_client_user(bot, message):
             return
 
-        if not client.user.mentioned_in(message):
+        if not bot.user.mentioned_in(message):
             logger.debug(f"Message not mentioning bot: {message.content}")
             return
 
@@ -61,7 +34,7 @@ def create_bot(
             return
 
         try:
-            chat_history = DiscordChatMessageHistory(client)
+            chat_history = DiscordChatMessageHistory(bot)
             await chat_history.load_messages(message.channel.id)
 
             messages = trim_messages(
@@ -85,7 +58,7 @@ def create_bot(
         except Exception as e:
             logger.error(f"Error generating roast: {str(e)}")
 
-    return client
+    return bot
 
 
 def init(debug: bool, verbose: bool):
@@ -103,7 +76,7 @@ def init(debug: bool, verbose: bool):
     except KeyError as e:
         raise ValueError(f"Invalid log level: {log_level_str}") from e
 
-    discord.utils.setup_logging(level=log_level)
+    logging.basicConfig(level=log_level)
 
 
 @click.command()
@@ -117,10 +90,10 @@ def main(debug: bool, verbose: bool):
     model = ChatMistralAI(temperature=0.7, model_name="pixtral-12b-2409")
 
     # Initialize the Discord client
-    discord_client = discord.Client(intents=discord.Intents.all())
-    discord_toolkit = DiscordToolkit(client=discord_client)
+    discord_bot = discord.Bot(intents=discord.Intents.default())
+    discord_toolkit = DiscordToolkit(client=discord_bot)
     graph = create_agent(tools=discord_toolkit.get_tools(), model=model)
-    bot = create_bot(client=discord_client, model=model, pregel=graph)
+    bot = create_bot(bot=discord_bot, model=model, pregel=graph)
 
     token = os.getenv("DISCORD_TOKEN")
     if not token:
