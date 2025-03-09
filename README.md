@@ -35,8 +35,8 @@ The project consists of several key components:
 
 Required environment variables:
 
-- `DISCORD_PUBLIC_KEY` - Discord application public key
-- `GITHUB_WEBHOOK_SECRET` - GitHub webhook secret
+- `DISCORD_TOKEN` - Discord application token
+- `MISTRAL_API_KEY` - Mistral API key
 
 ### Local Development
 
