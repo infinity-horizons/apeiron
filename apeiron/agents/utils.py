@@ -31,12 +31,12 @@ def _create_message(
         raise ValueError(f"Invalid role: {role}")
 
 
-def _process_messages(
-    messages_list: list,
+def _create_messages(
+    messages: list[dict],
 ) -> list[HumanMessage | AIMessage | SystemMessage]:
     """Process a list of messages and convert them to appropriate message objects."""
     processed_messages = []
-    for message in messages_list:
+    for message in messages:
         if not _validate_message(message):
             raise ValueError("Invalid message format")
 
@@ -50,20 +50,19 @@ def load_prompt(path: PathLike) -> ChatPromptTemplate:
     """Create the prompt template from the given YAML file."""
     with open(path) as f:
         prompt_config = yaml.safe_load(f)
-
     if not prompt_config:
         raise ValueError("Empty prompt configuration file")
-
-    messages = []
-    if "messages" in prompt_config:
-        messages = _process_messages(prompt_config["messages"])
-
-    example_prompt = []
-    if "example_messages" in prompt_config:
-        example_prompt = _process_messages(prompt_config["example_messages"])
-
+    messages = (
+        _create_messages(prompt_config["messages"])
+        if "messages" in prompt_config
+        else []
+    )
+    example_prompt = (
+        _create_messages(prompt_config["example_messages"])
+        if "example_messages" in prompt_config
+        else []
+    )
     examples = prompt_config.get("examples", [])
-
     if example_prompt and examples:
         messages.append(
             FewShotChatMessagePromptTemplate(
@@ -71,9 +70,5 @@ def load_prompt(path: PathLike) -> ChatPromptTemplate:
                 examples=examples,
             )
         )
-
-    # Always add MessagesPlaceholder
     messages.append(MessagesPlaceholder(variable_name="messages"))
-
     return ChatPromptTemplate.from_messages(messages)
-
