@@ -6,8 +6,8 @@ metadata:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: discord
+  name: apeiron
   namespace: infinity-horizons
 type: Opaque
 data:
-  token: ${base64encode(discord_token)}
+  discord_token: ${base64encode(discord_token)}
