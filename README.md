@@ -9,8 +9,7 @@ Discord communities.
 
 The project consists of several key components:
 
-- A FastAPI-based webhook API for handling Discord interactions and AI
-  processing
+- A Discord bot written in Python
 - Infrastructure as Code using Terraform
 - Cloud Run deployment configurations
 
@@ -27,9 +26,9 @@ The project consists of several key components:
 
 - Python 3.x
 - Nix (for development environment)
-- Google Cloud Platform account (for deployment)
+- Kubernetes cluster
 - Discord application credentials
-- GitHub webhook secret (for GitHub integration)
+- Mistral API key
 
 ### Environment Variables
 
@@ -55,12 +54,12 @@ uv sync
 3. Run the application:
 
 ```bash
-fastapi dev apeiron/app.py --reload
+pyton -m apeiron.agent --verbose --debug
 ```
 
 ## Deployment
 
-### Google Cloud Platform
+### Nishir Cluster
 
 1. Configure Terraform variables
 2. Apply infrastructure:
@@ -70,15 +69,7 @@ terraform -chdir=infra init
 terraform -chdir=infra apply
 ```
 
-### Cloud Run
-
-1. Update manifests as needed
-
-```bash
-sh update.sh
-```
-
-2. Deploy using kustomize:
+3. Deploy to Kubernetes:
 
 ```bash
 skaffold run
