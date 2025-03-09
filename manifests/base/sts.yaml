@@ -28,3 +28,9 @@ spec:
                 secretKeyRef:
                   name: apeiron
                   key: mistral_api_key
+          volumeMounts:
+            - name: huggingface-cache
+              mountPath: /root/.cache/huggingface
+      volumes:
+        - name: huggingface-cache
+          emptyDir: {}
