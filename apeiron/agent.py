@@ -10,9 +10,10 @@ from langgraph.pregel import Pregel
 
 from .agents.roast import create_agent
 from .chat_message_histories.discord import DiscordChatMessageHistory
-from .chat_models.mistral import create_chat_model
+from .chat_models import create_chat_model
 from .toolkits.discord.toolkit import DiscordToolkit
 from .tools.discord.utils import is_client_user
+from .utils import parse_feature_gates
 
 logger = logging.getLogger(__name__)
 
@@ -75,24 +76,6 @@ def init(debug: bool, verbose: bool):
     logging.basicConfig(level=log_level)
 
 
-def get_agent_model(agent_provider: str, agent_model: str) -> BaseChatModel:
-    """Initialize the agent model based on the provider and model name."""
-    if agent_provider == "mistralai":
-        return create_chat_model(model_name=agent_model)
-    else:
-        raise ValueError(f"Invalid agent provider: {agent_provider}")
-
-
-def parse_feature_gates(feature_gates_str: str) -> dict[str, bool]:
-    """Parse feature gates from a string into a dictionary."""
-    feature_gates_dict = {}
-    for feature_gate in feature_gates_str.split(","):
-        feature_gate = feature_gate.strip()
-        if feature_gate:
-            feature_gates_dict[feature_gate] = True
-    return feature_gates_dict
-
-
 @click.command()
 @click.option("--agent-provider", help="Agent provider", default="mistralai")
 @click.option("--agent-model", help="Agent model", default="pixtral-12b-2409")
@@ -113,7 +96,7 @@ def main(
     feature_gates_dict = parse_feature_gates(feature_gates)
 
     # Initialize the MistralAI model
-    model = get_agent_model(agent_provider, agent_model)
+    model = create_chat_model(provider_name=agent_provider, model_name=agent_model)
 
     # Initialize the Discord client
     discord_bot = discord.Bot(intents=discord.Intents.default())
