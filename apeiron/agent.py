@@ -82,6 +82,7 @@ def get_agent_model(agent_provider: str, agent_model: str) -> BaseChatModel:
     else:
         raise ValueError(f"Invalid agent provider: {agent_provider}")
 
+
 def parse_feature_gates(feature_gates_str: str) -> dict[str, bool]:
     """Parse feature gates from a string into a dictionary."""
     feature_gates_dict = {}
@@ -90,6 +91,7 @@ def parse_feature_gates(feature_gates_str: str) -> dict[str, bool]:
         if feature_gate:
             feature_gates_dict[feature_gate] = True
     return feature_gates_dict
+
 
 @click.command()
 @click.option("--agent-provider", help="Agent provider", default="mistralai")

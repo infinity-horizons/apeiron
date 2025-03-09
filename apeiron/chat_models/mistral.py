@@ -4,7 +4,7 @@ from mistral_common.tokens.tokenizers.mistral import MistralTokenizer
 
 def get_model(model_name: str) -> ChatMistralAI:
     """Get the ChatMistralAI model."""
-    tokenizer = MistralTokenizer.from_model("nemostral")
+    tokenizer = MistralTokenizer.v3(is_tekken=True)
 
     def get_token_ids(token: str) -> list[int]:
         """Get the token ids from the tokenizer."""
