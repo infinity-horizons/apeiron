@@ -1,0 +1,76 @@
+from os import PathLike
+
+import yaml
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
+from langchain_core.prompts import (
+    ChatPromptTemplate,
+    FewShotChatMessagePromptTemplate,
+    MessagesPlaceholder,
+)
+
+
+def _validate_message(message: dict) -> bool:
+    """Validate if message has required fields."""
+    return isinstance(message, dict) and "role" in message and "content" in message
+
+
+def _create_message(
+    role: str, content: str
+) -> HumanMessage | AIMessage | SystemMessage | None:
+    """Create appropriate message type based on role."""
+    if not content:
+        return None
+
+    if role == "system":
+        return SystemMessage(content=content)
+    elif role == "human":
+        return HumanMessage(content=content)
+    elif role == "ai":
+        return AIMessage(content=content)
+    else:
+        raise ValueError(f"Invalid role: {role}")
+
+
+def _process_messages(
+    messages_list: list,
+) -> list[HumanMessage | AIMessage | SystemMessage]:
+    """Process a list of messages and convert them to appropriate message objects."""
+    processed_messages = []
+    for message in messages_list:
+        if not _validate_message(message):
+            raise ValueError("Invalid message format")
+
+        msg = _create_message(message.get("role"), message.get("content"))
+        if msg:
+            processed_messages.append(msg)
+    return processed_messages
+
+
+def load_prompt(path: PathLike) -> ChatPromptTemplate:
+    """Create the prompt template from the given YAML file."""
+    with open(path) as f:
+        prompt_config = yaml.safe_load(f)
+
+    if not prompt_config:
+        raise ValueError("Empty prompt configuration file")
+
+    messages = []
+    if "messages" in prompt_config:
+        messages = _process_messages(prompt_config["messages"])
+
+    example_prompt = []
+    if "example_messages" in prompt_config:
+        example_prompt = _process_messages(prompt_config["example_messages"])
+
+    examples = prompt_config.get("examples", [])
+
+    return ChatPromptTemplate.from_messages(
+        messages
+        + [
+            FewShotChatMessagePromptTemplate(
+                example_prompt=example_prompt,
+                examples=examples,
+            ),
+            MessagesPlaceholder(variable_name="messages"),
+        ]
+    )
