@@ -10,9 +10,9 @@ from langgraph.pregel import Pregel
 
 from .agents.roast import create_agent
 from .chat_message_histories.discord import DiscordChatMessageHistory
+from .chat_models.mistral import ChatMistralAI
 from .toolkits.discord.toolkit import DiscordToolkit
 from .tools.discord.utils import is_client_user
-from .chat_models.mistral import ChatMistralAI
 
 logger = logging.getLogger(__name__)
 
