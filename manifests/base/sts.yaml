@@ -28,9 +28,11 @@ spec:
                 secretKeyRef:
                   name: apeiron
                   key: mistral_api_key
+            - name: TIKTOKEN_CACHE_DIR
+              value: /usr/local/share/tiktoken
           volumeMounts:
-            - name: huggingface-cache
-              mountPath: /root/.cache/huggingface
+            - name: cache
+              mountPath: /usr/local/share/tiktoken
       volumes:
-        - name: huggingface-cache
+        - name: cache
           emptyDir: {}
