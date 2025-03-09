@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 def create_agent(tools: Sequence[BaseTool], model: BaseChatModel, **kwargs):
     """Create the Operator 6O agent for the graph."""
     return create_react_agent(
-        name="roast",
+        name="Operator 6O",
         model=model,
         tools=tools,
         store=InMemoryStore(),

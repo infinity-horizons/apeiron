@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 def create_agent(tools: Sequence[BaseTool], model: BaseChatModel, **kwargs):
     """Create the roast generation node for the graph."""
     return create_react_agent(
-        name="roast",
+        name="Roast",
         model=model,
         tools=tools,
         store=InMemoryStore(),
