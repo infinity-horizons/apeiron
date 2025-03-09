@@ -6,11 +6,11 @@ import discord
 from langchain_core.globals import set_debug, set_verbose
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import trim_messages
-from langchain_mistralai.chat_models import ChatMistralAI
 from langgraph.pregel import Pregel
 
 from .agents.roast import create_agent
 from .chat_message_histories.discord import DiscordChatMessageHistory
+from .chat_models.mistral import create_chat_model
 from .toolkits.discord.toolkit import DiscordToolkit
 from .tools.discord.utils import is_client_user
 
@@ -74,12 +74,14 @@ def init(debug: bool, verbose: bool):
 
     logging.basicConfig(level=log_level)
 
+
 def get_agent_model(agent_provider: str, agent_model: str) -> BaseChatModel:
     """Initialize the agent model based on the provider and model name."""
     if agent_provider == "mistralai":
-        return ChatMistralAI(model_name=agent_model)
+        return create_chat_model(model_name=agent_model)
     else:
         raise ValueError(f"Invalid agent provider: {agent_provider}")
+
 
 def parse_feature_gates(feature_gates_str: str) -> dict[str, bool]:
     """Parse feature gates from a string into a dictionary."""
@@ -89,6 +91,7 @@ def parse_feature_gates(feature_gates_str: str) -> dict[str, bool]:
         if feature_gate:
             feature_gates_dict[feature_gate] = True
     return feature_gates_dict
+
 
 @click.command()
 @click.option("--agent-provider", help="Agent provider", default="mistralai")
@@ -116,7 +119,7 @@ def main(
     discord_bot = discord.Bot(intents=discord.Intents.default())
     tools = []
     if feature_gates_dict.get("AgentDiscordToolkit", False):
-        tools = discord_toolkit.get_tools()
+        tools = DiscordToolkit(client=discord_bot).get_tools()
     graph = create_agent(tools=tools, model=model)
     bot = create_bot(bot=discord_bot, model=model, pregel=graph)
 
