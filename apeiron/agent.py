@@ -13,7 +13,7 @@ from .chat_message_histories.discord import DiscordChannelChatMessageHistory
 from .chat_models import create_chat_model
 from .toolkits.discord.toolkit import DiscordToolkit
 from .tools.discord.utils import is_client_user
-from .utils import create_thread_id, parse_feature_gates
+from .utils import parse_feature_gates, create_thread_id
 
 logger = logging.getLogger(__name__)
 
