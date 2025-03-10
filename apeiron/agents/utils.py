@@ -57,10 +57,8 @@ def load_prompt(path: PathLike) -> ChatPromptTemplate:
         if "messages" in prompt_config
         else []
     )
-    example_prompt = (
-        _create_messages(prompt_config["example_messages"])
-        if "example_messages" in prompt_config
-        else []
+    example_prompt = ChatPromptTemplate.from_messages(
+        prompt_config.get("example_prompt", [])
     )
     examples = prompt_config.get("examples", [])
     if example_prompt and examples:
