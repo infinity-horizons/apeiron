@@ -26,7 +26,13 @@ def create_bot(bot: discord.Bot, model: BaseChatModel, pregel: Pregel):
         if is_client_user(bot, message):
             return
 
-        if not bot.user.mentioned_in(message):
+        # Check if the message is a reply to the bot's message
+        if message.reference and message.reference.resolved:
+            if message.reference.resolved.author.id != bot.user.id:
+                logger.debug(f"Message not replying to bot: {message.content}")
+                return
+        # If not a reply, check for mention
+        elif not bot.user.mentioned_in(message):
             logger.debug(f"Message not mentioning bot: {message.content}")
             return
 
