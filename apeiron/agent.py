@@ -13,7 +13,7 @@ from .chat_message_histories.discord import DiscordChannelChatMessageHistory
 from .chat_models import create_chat_model
 from .toolkits.discord.toolkit import DiscordToolkit
 from .tools.discord.utils import is_client_user
-from .utils import create_thread_id, parse_feature_gates
+from .utils import create_thread_id, parse_feature_gates, trim_messages_images
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +41,7 @@ def create_bot(bot: discord.Bot, model: BaseChatModel, pregel: Pregel):
             await chat_history.load_messages(message.channel.id)
 
             messages = trim_messages(
-                chat_history.messages,
+                trim_messages_images(chat_history.messages, max_images=1),
                 token_counter=model,
                 strategy="last",
                 max_tokens=2000,
