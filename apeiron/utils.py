@@ -1,5 +1,4 @@
 import logging
-from functools import reduce
 
 import discord
 from langchain_core.messages import BaseMessage
@@ -10,8 +9,7 @@ logger = logging.getLogger(__name__)
 def trim_messages_images(
     messages: list[BaseMessage], max_images: int = 8
 ) -> list[BaseMessage]:
-    """Filter chat history to keep only a maximum number of images while
-    preserving text content.
+    """Filter chat history to keep only a maximum number of images.
 
     Args:
         messages: List of messages to filter
@@ -20,23 +18,24 @@ def trim_messages_images(
     Returns:
         List of filtered messages with limited image attachments
     """
-    img_count = 0
-    slice_index = len(messages)
+    image_count = 0
+    slice_index = 0
 
-    for i, message in enumerate(messages):
-        if isinstance(message.content, str):
-            continue
-
-        for item in message.content:
-            if item.get("type") == "image_url":
-                img_count += 1
-                if img_count > max_images:
-                    slice_index = i
-                    break
-        if img_count > max_images:
+    # Process messages in reverse order (newest to oldest)
+    for i, message in enumerate(reversed(messages)):
+        if isinstance(message.content, list):
+            # Count images in the message content
+            for content in message.content:
+                if isinstance(content, dict) and content.get("type") == "image_url":
+                    image_count += 1
+                    if image_count > max_images:
+                        slice_index = len(messages) - i - 1
+                        break
+        if image_count > max_images:
             break
 
-    return messages[:slice_index]
+    # Return messages from slice_index to the end
+    return messages[slice_index + 1 :]
 
 
 def parse_feature_gates(feature_gates_str: str) -> dict[str, bool]:

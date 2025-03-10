@@ -41,7 +41,7 @@ def create_bot(bot: discord.Bot, model: BaseChatModel, pregel: Pregel):
             await chat_history.load_messages(message.channel.id)
 
             messages = trim_messages(
-                trim_messages_images(chat_history.messages),
+                trim_messages_images(chat_history.messages, max_images=1),
                 token_counter=model,
                 strategy="last",
                 max_tokens=2000,
