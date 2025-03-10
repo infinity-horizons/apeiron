@@ -1,5 +1,5 @@
-from functools import reduce
 import logging
+from functools import reduce
 
 import discord
 from langchain_core.messages import BaseMessage
@@ -20,43 +20,23 @@ def trim_messages_images(
     Returns:
         List of filtered messages with limited image attachments
     """
+    img_count = 0
+    slice_index = len(messages)
 
-    def process_content_item(acc: tuple[list, int], item: dict) -> tuple[list, int]:
-        content, img_count = acc
-        if item.get("type") == "text":
-            return (content + [item], img_count)
-        elif item.get("type") == "image_url" and img_count < max_images:
-            return (content + [item], img_count + 1)
-        return (content, img_count)
-
-    def process_message(
-        acc: tuple[list, int], message: BaseMessage
-    ) -> tuple[list, int]:
-        filtered_messages, img_count = acc
-
+    for i, message in enumerate(messages):
         if isinstance(message.content, str):
-            return (filtered_messages + [message.content], img_count)
+            continue
 
-        filtered_message, new_img_count = reduce(
-            process_content_item, message.content, ([], img_count)
-        )
+        for item in message.content:
+            if item.get("type") == "image_url":
+                img_count += 1
+                if img_count > max_images:
+                    slice_index = i
+                    break
+        if img_count > max_images:
+            break
 
-        match filtered_message:
-            case [{"type": "text", "content": content}]:
-                return (
-                    filtered_messages + [content],
-                    new_img_count,
-                )
-            case _:
-                return (filtered_messages + [message], new_img_count)
-
-    # Process messages in reverse order and reduce
-    filtered_messages, img_count = reduce(process_message, reversed(messages), ([], 0))
-
-    logger.debug(f"Found {img_count} images in chat history")
-
-    # Restore original chronological order
-    return list(reversed(filtered_messages))
+    return messages[:slice_index]
 
 
 def parse_feature_gates(feature_gates_str: str) -> dict[str, bool]:
