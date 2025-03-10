@@ -16,14 +16,14 @@ logger = logging.getLogger(__name__)
 def create_agent(tools: Sequence[BaseTool], model: BaseChatModel, **kwargs):
     """Create the roast generation node for the graph."""
     return create_react_agent(
-        checkpointer=InMemorySaver(),
-        model=model,
         name="Roast",
-        prompt=load_prompt(
-            Path(__file__).parent.resolve() / f"{Path(__file__).stem}.yaml"
-        ),
-        store=InMemoryStore(),
+        model=model,
         tools=tools,
+        store=InMemoryStore(),
+        checkpointer=InMemorySaver(),
+        prompt=load_prompt(
+            Path(__file__).parent.resolve() / f"{Path(__file__).stem}.yaml",
+        ),
         version="v2",
         **kwargs,
     )
