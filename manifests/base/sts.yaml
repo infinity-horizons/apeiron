@@ -28,6 +28,3 @@ spec:
                 secretKeyRef:
                   name: apeiron
                   key: mistral_api_key
-      volumes:
-        - name: cache
-          emptyDir: {}
