@@ -6,7 +6,8 @@ set -o pipefail
 
 # Configure Kubeconfig
 mkdir -p "$(dirname "$0")/.terraform/tmp/kubernetes"
-KUBECONFIG="$(dirname "$0")/.terraform/tmp/kubernetes/config" tailscale configure kubeconfig nishir-k8s-operator
+KUBECONFIG="$(dirname "$0")/.terraform/tmp/kubernetes/config" \
+  tailscale configure kubeconfig nishir-k8s-operator
 
 # Fetch all outputs at once and save them to terraform.tfvars.json
 tofu -chdir="$(dirname "$0")/../apeiron-services" output -json |
