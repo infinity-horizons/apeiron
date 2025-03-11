@@ -7,7 +7,7 @@ variable "mistral" {
 }
 
 variable "discord" {
-  type        = object({
+  type = object({
     token = string
   })
   description = "Discord bot"
