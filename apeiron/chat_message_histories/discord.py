@@ -1,4 +1,4 @@
-from discord import Attachment, Client, Message
+from discord import Attachment, Client, Message,TextChannel
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
 
@@ -19,17 +19,25 @@ class DiscordChannelChatMessageHistory(BaseChatMessageHistory):
         """Clear messages from the store."""
         self.messages = []
 
-    async def load_messages(self, channel_id: int, limit: int | None = None) -> None:
-        """Load messages from a Discord channel into the history.
-
+    async def load_messages_from_message(self, message: Message, limit: int | None = None) -> None:
+        """Load messages from a Discord message into the history.
         Args:
-            channel_id: ID of the channel to load messages from
+            message: The message to load messages from
             limit: Maximum number of messages to load (None for no limit)
         """
-        channel = self.discord_client.get_channel(channel_id)
-        if not channel:
-            return
+        self.clear()
+        channel = message.channel
+        if channel:
+            await self.load_messages_from_channel(channel, limit)
 
+    async def load_messages_from_channel(
+        self, channel: TextChannel, limit: int | None = None
+    ) -> None:
+        """Load messages from a Discord channel into the history.
+        Args:
+            channel: The channel to load messages from
+            limit: Maximum number of messages to load (None for no limit)
+        """
         self.clear()
         async for message in channel.history(limit=limit):
             self.add_message(message)

@@ -54,7 +54,7 @@ def create_thread_id(message: discord.Message):
         return "/".join(
             [
                 "guild",
-                "__private__",
+                "__dm__",
                 "channel",
                 str(message.author.id),
             ]
