@@ -1,4 +1,4 @@
-from discord import Attachment, Client, Message,TextChannel
+from discord import Attachment, Client, Message, TextChannel
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
 
@@ -19,7 +19,9 @@ class DiscordChannelChatMessageHistory(BaseChatMessageHistory):
         """Clear messages from the store."""
         self.messages = []
 
-    async def load_messages_from_message(self, message: Message, limit: int | None = None) -> None:
+    async def load_messages_from_message(
+        self, message: Message, limit: int | None = None
+    ) -> None:
         """Load messages from a Discord message into the history.
         Args:
             message: The message to load messages from
