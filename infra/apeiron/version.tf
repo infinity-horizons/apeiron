@@ -14,3 +14,7 @@ terraform {
     }
   }
 }
+
+provider "kubernetes" {
+  config_path = "${path.module}/.terraform/tmp/kubernetes/config"
+}
