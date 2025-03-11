@@ -7,4 +7,10 @@ terraform {
       name = "apeiron"
     }
   }
+  required_providers {
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = "~> 2.36"
+    }
+  }
 }
