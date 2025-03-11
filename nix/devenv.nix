@@ -49,6 +49,7 @@
           actionlint.enable = true;
           deadnix.enable = true;
           flake-checker.enable = true;
+          hadolint.enable = true;
           shellcheck.enable = true;
           tflint.enable = true;
         };
