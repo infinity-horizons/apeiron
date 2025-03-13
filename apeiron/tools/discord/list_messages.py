@@ -46,7 +46,7 @@ class DiscordListMessagesTool(BaseDiscordTool):
         try:
             channel = await self.client.fetch_channel(channel_id)
             messages = []
-            kwargs = {"limit": min(limit, 100)}
+            kwargs = {"limit": limit}
             if before:
                 kwargs["before"] = before
             if after:
