@@ -1,9 +1,11 @@
+import json
+
 from discord import Attachment, Client, Message, TextChannel
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
 
 
-class DiscordChannelChatMessageHistory(BaseChatMessageHistory):
+class DiscordChatMessageHistory(BaseChatMessageHistory):
     """Chat message history that stores Discord messages."""
 
     def __init__(self, discord_client: Client) -> None:
@@ -59,7 +61,8 @@ class DiscordChannelChatMessageHistory(BaseChatMessageHistory):
                 if image_content:
                     content.append(image_content)
         else:
-            content = _normalize_text_content(message.content)
+            content = _convert_text_content(message)
+
         return (
             AIMessage(content=content)
             if message.author == self.discord_client.user
@@ -74,11 +77,34 @@ def _create_image_content(attachment) -> dict | None:
     return None
 
 
-def _convert_text_content(message: Message) -> dict | None:
+def _convert_text_content(message: Message) -> dict | str | None:
     """Create text content from Discord message."""
-    if message.content:
-        return {"type": "text", "text": _normalize_text_content(message.content)}
-    return None
+    data = {
+        "id": str(message.id),
+        "channel_id": str(message.channel.id),
+        "author": {
+            "id": str(message.author.id),
+            "name": message.author.name,
+            "discriminator": message.author.discriminator,
+        },
+        "content": message.content,
+        "created_at": message.created_at.isoformat(),
+        "edited_at": message.edited_at.isoformat() if message.edited_at else None,
+        "attachments": [
+            {
+                "id": str(att.id),
+                "filename": att.filename,
+                "url": att.url,
+                "content_type": att.content_type,
+            }
+            for att in message.attachments
+        ],
+    }
+    return (
+        {"type": "text", "text": json.dumps(data)}
+        if message.attachments
+        else json.dumps(data)
+    )
 
 
 def _normalize_text_content(content: str) -> str:
