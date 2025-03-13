@@ -34,7 +34,7 @@ class DiscordSendMessageTool(BaseDiscordTool):
             str: Confirmation message with the sent message ID
         """
         try:
-            channel = self.client.get_channel(channel_id)
+            channel = await self.client.fetch_channel(channel_id)
             if not channel:
                 raise ToolException(f"Channel {channel_id} not found")
             message = await channel.send(content)
