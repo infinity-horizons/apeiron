@@ -2,6 +2,7 @@ from typing import Any
 
 from langchain_core.tools.base import BaseTool, BaseToolkit
 
+from ...tools.discord.add_reaction import DiscordAddReactionTool
 from ...tools.discord.list_emojis import DiscordListEmojisTool
 from ...tools.discord.list_messages import DiscordListMessagesTool
 from ...tools.discord.reply_message import DiscordReplyMessageTool
@@ -20,6 +21,7 @@ class DiscordToolkit(BaseToolkit):
             List of Discord tools.
         """
         return [
+            DiscordAddReactionTool(client=self.client),
             DiscordListEmojisTool(client=self.client),
             DiscordListMessagesTool(client=self.client),
             DiscordReplyMessageTool(client=self.client),
