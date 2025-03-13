@@ -31,14 +31,16 @@ def create_bot(bot: discord.Bot, model: BaseChatModel, pregel: Pregel):
             if message.reference.resolved.author.id != bot.user.id:
                 logger.debug(f"Message not replying to bot: {message.content}")
                 return
-        # If not a reply, check for mention
-        elif not bot.user.mentioned_in(message):
-            logger.debug(f"Message not mentioning bot: {message.content}")
+        # If not a reply, check for mention (only in guild channels)
+        elif message.guild is not None and not bot.user.mentioned_in(message):
+            logger.debug(
+                f"Message not mentioning bot in guild channel: {message.content}"
+            )
             return
 
         try:
             chat_history = DiscordChannelChatMessageHistory(bot)
-            await chat_history.load_messages(message.channel.id)
+            await chat_history.load_messages_from_message(message)
 
             messages = trim_messages(
                 trim_messages_images(chat_history.messages, max_images=1),
@@ -108,7 +110,12 @@ def main(
     model = create_chat_model(provider_name=agent_provider, model_name=agent_model)
 
     # Initialize the Discord client
-    discord_bot = discord.Bot(intents=discord.Intents.default())
+    # Set up intents with message content and DM permissions
+    intents = discord.Intents.default()
+    intents.message_content = True
+    intents.dm_messages = True
+
+    discord_bot = discord.Bot(intents=intents)
     tools = []
     if feature_gates_dict.get("AgentDiscordToolkit", False):
         tools = DiscordToolkit(client=discord_bot).get_tools()
