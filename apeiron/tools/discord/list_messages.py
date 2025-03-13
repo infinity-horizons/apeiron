@@ -44,7 +44,7 @@ class DiscordListMessagesTool(BaseDiscordTool):
             list[dict]: List containing message objects with metadata and content
         """
         try:
-            channel = self.client.get_channel(channel_id)
+            channel = await self.client.fetch_channel(channel_id)
             messages = []
             kwargs = {"limit": min(limit, 100)}
             if before:
