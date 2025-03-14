@@ -9,3 +9,6 @@ spec:
   resources:
     requests:
       storage: 4Gi
+  storageClassName: nishir-standard
+  volumeMode: Filesystem
+  volumeName: mlflow-data
