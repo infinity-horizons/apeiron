@@ -9,8 +9,9 @@ from langchain_core.messages import trim_messages
 from langgraph.pregel import Pregel
 
 from .agents.operator_6o import create_agent
-from .chat_message_histories.discord import DiscordChannelChatMessageHistory
+from .chat_message_histories.discord import _convert_text_content
 from .chat_models import create_chat_model
+from .schema import ActionType, DiscordAction
 from .toolkits.discord.toolkit import DiscordToolkit
 from .tools.discord.utils import is_client_user
 from .utils import create_thread_id, parse_feature_gates, trim_messages_images
@@ -39,22 +40,9 @@ def create_bot(bot: discord.Bot, model: BaseChatModel, pregel: Pregel):
             return
 
         try:
-            chat_history = DiscordChannelChatMessageHistory(bot)
-            await chat_history.load_messages_from_message(message)
-
-            messages = trim_messages(
-                trim_messages_images(chat_history.messages, max_images=1),
-                token_counter=model,
-                strategy="last",
-                max_tokens=2000,
-                start_on="human",
-                end_on=("human", "tool"),
-                include_system=True,
-            )
-
             async with message.channel.typing():
                 result = await pregel.ainvoke(
-                    {"messages": messages},
+                    {"messages": _convert_text_content(message)},
                     config={
                         "configurable": {
                             "thread_id": create_thread_id(message),
@@ -62,9 +50,25 @@ def create_bot(bot: discord.Bot, model: BaseChatModel, pregel: Pregel):
                         }
                     },
                 )
-                await message.channel.send(result["messages"][-1].content)
+
+                match result["structured_response"]:
+                    case ActionType.SEND:
+                        logger.debug(
+                            "Sending message: %s", result["messages"][-1].content
+                        )
+                        await message.channel.send(result["messages"][-1].content)
+
+                    case ActionType.REPLY:
+                        logger.debug(
+                            "Replying to message with ID: %s",
+                            result["messages"][-1].content,
+                        )
+                        await message.reply(result["messages"][-1].content)
+
+                    case ActionType.NOOP:
+                        logger.debug("No action taken")
         except Exception as e:
-            logger.error(f"Error generating roast: {str(e)}")
+            logger.error(f"Error processing message: {e}")
 
     return bot
 
@@ -100,7 +104,10 @@ def main(
     feature_gates_dict = parse_feature_gates(feature_gates)
 
     # Initialize the MistralAI model
-    model = create_chat_model(provider_name=agent_provider, model_name=agent_model)
+    model = create_chat_model(
+        provider_name=agent_provider,
+        model_name=agent_model,
+    )
 
     # Initialize the Discord client
     # Set up intents with message content and DM permissions
@@ -109,9 +116,7 @@ def main(
     intents.dm_messages = True
 
     discord_bot = discord.Bot(intents=intents)
-    tools = []
-    if feature_gates_dict.get("AgentDiscordToolkit", False):
-        tools = DiscordToolkit(client=discord_bot).get_tools()
+    tools = DiscordToolkit(client=discord_bot).get_tools()
     graph = create_agent(tools=tools, model=model)
     bot = create_bot(bot=discord_bot, model=model, pregel=graph)
 
