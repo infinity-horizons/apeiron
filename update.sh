@@ -9,6 +9,7 @@ gitnr create \
   ghc:Nix \
   gh:Python \
   repo:shikanime/gitignore/refs/heads/main/Devenv.gitignore \
+  repo:shikanime/gitignore/refs/heads/main/MLflow.gitignore \
   tt:jetbrains+all \
   tt:linux \
   tt:macos \
