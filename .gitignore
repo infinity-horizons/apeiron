@@ -195,6 +195,13 @@ cython_debug/
 .direnv*
 .pre-commit-config.yaml
 
+###--------------------------------------------------------------###
+###  Repo: shikanime/gitignore/refs/heads/main/MLflow.gitignore  ###
+###--------------------------------------------------------------###
+
+mlartifacts/
+mlruns/
+
 ###-------------------------###
 ###  TopTal: jetbrains+all  ###
 ###-------------------------###
