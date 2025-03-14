@@ -12,6 +12,6 @@ resources:
 labels:
   - pairs:
       app.kubernetes.io/name: mlflow
-      app.kubernetes.io/component: server
+      app.kubernetes.io/component: monitoring
       app.kubernetes.io/part-of: baguetto
       app.kubernetes.io/version: v2.0.1
