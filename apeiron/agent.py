@@ -1,9 +1,9 @@
 import logging
 import os
 
+import mlflow
 import click
 import discord
-from langchain_core.globals import set_debug, set_verbose
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import trim_messages
 from langgraph.pregel import Pregel
@@ -69,12 +69,9 @@ def create_bot(bot: discord.Bot, model: BaseChatModel, pregel: Pregel):
     return bot
 
 
-def init(debug: bool, verbose: bool):
-    # Set debug and verbose modes if flags are enabled
-    if debug:
-        set_debug(True)
-    if verbose:
-        set_verbose(True)
+def init():
+    # Intrumentalise the langchain_core with mlflow
+    mlflow.langchain.autolog()
 
     # Get log level from environment variable, default to INFO if not set
     log_level_str = os.getenv("LOG_LEVEL", "INFO")
@@ -88,20 +85,16 @@ def init(debug: bool, verbose: bool):
 
 
 @click.command()
-@click.option("--agent-provider", help="Agent provider", default="mistralai")
 @click.option("--agent-model", help="Agent model", default="pixtral-12b-2409")
+@click.option("--agent-provider", help="Agent provider", default="mistralai")
 @click.option("--feature-gates", help="Enable feature gates", default="")
-@click.option("--debug", is_flag=True, help="Enable debug logging", default=False)
-@click.option("--verbose", is_flag=True, help="Enable verbose logging", default=False)
 def main(
-    agent_provider: str,
     agent_model: str,
+    agent_provider: str,
     feature_gates: str,
-    debug: bool,
-    verbose: bool,
 ):
     """Run the Discord bot agent"""
-    init(debug, verbose)
+    init()
 
     # Parse feature gates
     feature_gates_dict = parse_feature_gates(feature_gates)
