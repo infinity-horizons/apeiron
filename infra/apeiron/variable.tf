@@ -7,7 +7,7 @@ variable "apeiron" {
   sensitive   = true
 }
 
-variable "mlflow_server" {
+variable "mlflow" {
   type = object({
     access_key_id     = string
     bucket            = string

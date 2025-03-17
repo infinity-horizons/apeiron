@@ -33,6 +33,8 @@ spec:
                 secretKeyRef:
                   name: mlflow
                   key: region
+            - name: AWS_S3_SIGNATURE_VERSION
+              value: s3v4
             - name: AWS_SECRET_ACCESS_KEY
               valueFrom:
                 secretKeyRef:
