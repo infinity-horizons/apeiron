@@ -41,7 +41,7 @@ def create_app():
     intents.message_content = True
     intents.dm_messages = True
 
-    bot = discord.Bot(intents=intents)
+    bot = discord.AutoShardedBot(intents=intents)
     tools = []
     if feature_gates_dict.get("AgentDiscordToolkit", False):
         tools = DiscordToolkit(client=bot).get_tools()
