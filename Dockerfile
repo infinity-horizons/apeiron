@@ -31,4 +31,4 @@ WORKDIR /app
 COPY --from=builder /app .
 
 ENTRYPOINT ["/app/.venv/bin/uvicorn"]
-CMD ["--factory", "apeiron.app:create_app"]
+CMD ["--factory", "apeiron.app:create_app", "--host", "0.0.0.0"]
