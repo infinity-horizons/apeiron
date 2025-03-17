@@ -1,12 +1,13 @@
+import asyncio
 import logging
 import os
 from contextlib import asynccontextmanager
 
-import asyncio
-import mlflow
 import discord
+import mlflow
 import uvicorn
 from fastapi import FastAPI
+from fastapi.responses import JSONResponse
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import trim_messages
 from langgraph.pregel import Pregel
@@ -20,6 +21,18 @@ from .utils import create_thread_id, parse_feature_gates, trim_messages_images
 
 logger = logging.getLogger(__name__)
 
+def create_logging_handlers():
+    match os.getenv("LOG_FORMAT", "uvicorn"):
+        case "uvicorn":
+            handler = logging.StreamHandler()
+            handler.setFormatter(
+                uvicorn.logging.ColourizedFormatter(
+                    "{levelprefix} {message}", style="{", use_colors=True
+                )
+            )
+            return [handler]
+        case _:
+            return []
 
 def create_app():
     # Intrumentalise the langchain_core with mlflow
@@ -33,13 +46,7 @@ def create_app():
     except KeyError as e:
         raise ValueError(f"Invalid log level: {log_level_str}") from e
 
-    handler = logging.StreamHandler()
-    handler.setFormatter(
-        uvicorn.logging.ColourizedFormatter(
-            "{levelprefix} {message}", style="{", use_colors=True
-        )
-    )
-    logging.basicConfig(level=log_level, handlers=[handler])
+    logging.basicConfig(level=log_level, handlers=create_logging_handlers())
 
     # Parse environment variables
     agent_model = os.getenv("AGENT_MODEL", "pixtral-12b-2409")
