@@ -13,7 +13,7 @@ from apeiron.agents.operator_6o import create_agent
 from apeiron.chat_message_histories.discord import DiscordChannelChatMessageHistory
 from apeiron.chat_models import create_chat_model
 from apeiron.toolkits.discord.toolkit import DiscordToolkit
-from apeiron.tools.discord.base.utils import is_client_user
+from apeiron.tools.discord.utils import is_client_user
 from apeiron.utils import (
     create_thread_id,
     parse_feature_gates,
