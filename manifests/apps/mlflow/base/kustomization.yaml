@@ -8,6 +8,7 @@ resources:
   - ingress.yaml
   - svc.yaml
   - sts.yaml
+  - pvc.yaml
 labels:
   - pairs:
       app.kubernetes.io/name: mlflow
