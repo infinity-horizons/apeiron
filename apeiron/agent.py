@@ -78,13 +78,15 @@ def create_app():
             raise ValueError("DISCORD_TOKEN environment variable is not set")
 
         # Start the bot in the background
-        await discord_bot.connect(token)
-        asyncio.create_task(discord_bot.connect())
+        discord_bot_task = asyncio.create_task(discord_bot.start(token))
 
         yield
 
         # Cleanup on shutdown
         await discord_bot.close()
+        discord_bot_task.cancel()
+        with contextlib.suppress(asyncio.CancelledError):
+            await discord_bot_task
 
     app = FastAPI(lifespan=lifespan)
 
