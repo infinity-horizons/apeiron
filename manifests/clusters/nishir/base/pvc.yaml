@@ -5,7 +5,7 @@ metadata:
   namespace: infinity-horizons
 spec:
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   resources:
     requests:
       storage: 4Gi

@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: apeiron
+  namespace: infinity-horizons
+spec:
+  template:
+    spec:
+      containers:
+        - name: apeiron
+          image: apeiron
+          env:
+            - name: MLFLOW_TRACKING_URI
+              value: sqlite:///data/mlflow.db
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      securityContext:
+        fsGroup: 1001
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: mlflow-data

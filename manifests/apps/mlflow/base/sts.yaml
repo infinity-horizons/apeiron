@@ -43,20 +43,8 @@ spec:
                 configMapKeyRef:
                   name: mlflow
                   key: artifacts_destination
-            - name: MLFLOW_BACKEND_STORE_URI
-              value: sqlite:///data/mlflow/mlflow.db
             - name: MLFLOW_S3_ENDPOINT_URL
               valueFrom:
                 configMapKeyRef:
                   name: mlflow
                   key: s3_endpoint_url
-          ports:
-            - containerPort: 5000
-              name: http
-          volumeMounts:
-            - name: data
-              mountPath: /data/mlflow
-      volumes:
-        - name: data
-          persistentVolumeClaim:
-            claimName: mlflow-data
