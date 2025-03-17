@@ -1,9 +1,13 @@
+import asyncio
 import logging
 import os
+from contextlib import asynccontextmanager
 
-import mlflow
-import click
 import discord
+import mlflow
+import uvicorn
+from fastapi import FastAPI
+from fastapi.responses import JSONResponse
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import trim_messages
 from langgraph.pregel import Pregel
@@ -17,59 +21,20 @@ from .utils import create_thread_id, parse_feature_gates, trim_messages_images
 
 logger = logging.getLogger(__name__)
 
-
-def create_bot(bot: discord.Bot, model: BaseChatModel, pregel: Pregel):
-    """Create and configure the Discord client with all intents."""
-
-    @bot.listen
-    async def on_message(message: discord.Message):
-        if is_client_user(bot, message):
-            return
-
-        # Check if the message is a reply to the bot's message
-        if message.reference and message.reference.resolved:
-            if message.reference.resolved.author.id != bot.user.id:
-                logger.debug(f"Message not replying to bot: {message.content}")
-                return
-        # If not a reply, check for mention (only in guild channels)
-        elif message.guild is not None and not bot.user.mentioned_in(message):
-            logger.debug(
-                f"Message not mentioning bot in guild channel: {message.content}"
-            )
-            return
-
-        try:
-            chat_history = DiscordChannelChatMessageHistory(bot)
-            await chat_history.load_messages_from_message(message)
-
-            messages = trim_messages(
-                trim_messages_images(chat_history.messages, max_images=1),
-                token_counter=model,
-                strategy="last",
-                max_tokens=2000,
-                start_on="human",
-                end_on=("human", "tool"),
-                include_system=True,
-            )
-
-            async with message.channel.typing():
-                result = await pregel.ainvoke(
-                    {"messages": messages},
-                    config={
-                        "configurable": {
-                            "thread_id": create_thread_id(message),
-                            "message": message,
-                        }
-                    },
+def create_logging_handlers():
+    match os.getenv("LOG_FORMAT", "uvicorn"):
+        case "uvicorn":
+            handler = logging.StreamHandler()
+            handler.setFormatter(
+                uvicorn.logging.ColourizedFormatter(
+                    "{levelprefix} {message}", style="{", use_colors=True
                 )
-                await message.channel.send(result["messages"][-1].content)
-        except Exception as e:
-            logger.error(f"Error generating roast: {str(e)}")
+            )
+            return [handler]
+        case _:
+            return []
 
-    return bot
-
-
-def init():
+def create_app():
     # Intrumentalise the langchain_core with mlflow
     mlflow.langchain.autolog()
 
@@ -81,23 +46,13 @@ def init():
     except KeyError as e:
         raise ValueError(f"Invalid log level: {log_level_str}") from e
 
-    logging.basicConfig(level=log_level)
+    logging.basicConfig(level=log_level, handlers=create_logging_handlers())
 
-
-@click.command()
-@click.option("--agent-model", help="Agent model", default="pixtral-12b-2409")
-@click.option("--agent-provider", help="Agent provider", default="mistralai")
-@click.option("--feature-gates", help="Enable feature gates", default="")
-def main(
-    agent_model: str,
-    agent_provider: str,
-    feature_gates: str,
-):
-    """Run the Discord bot agent"""
-    init()
-
-    # Parse feature gates
-    feature_gates_dict = parse_feature_gates(feature_gates)
+    # Parse environment variables
+    agent_model = os.getenv("AGENT_MODEL", "pixtral-12b-2409")
+    agent_provider = os.getenv("AGENT_PROVIDER", "mistralai")
+    feature_gates_str = os.getenv("FEATURE_GATES", "")
+    feature_gates_dict = parse_feature_gates(feature_gates_str)
 
     # Initialize the MistralAI model
     model = create_chat_model(provider_name=agent_provider, model_name=agent_model)
@@ -113,14 +68,90 @@ def main(
     if feature_gates_dict.get("AgentDiscordToolkit", False):
         tools = DiscordToolkit(client=discord_bot).get_tools()
     graph = create_agent(tools=tools, model=model)
-    bot = create_bot(bot=discord_bot, model=model, pregel=graph)
 
-    token = os.getenv("DISCORD_TOKEN")
-    if not token:
-        raise ValueError("DISCORD_TOKEN environment variable is not set")
+    # Discord message handler directly in create_app
+    @discord_bot.listen
+    async def on_message(message: discord.Message):
+        if is_client_user(discord_bot, message):
+            return
 
-    bot.run(token)
+        # Check if message is reply to bot or contains mention
+        if message.reference and message.reference.resolved:
+            if message.reference.resolved.author.id != discord_bot.user.id:
+                logger.debug(f"Message not replying to bot: {message.content}")
+                return
+        elif message.guild is not None and not discord_bot.user.mentioned_in(message):
+            logger.debug(f"Message not mentioning bot in guild channel: {message.content}")
+            return
 
+        try:
+            chat_history = DiscordChannelChatMessageHistory(discord_bot)
+            await chat_history.load_messages_from_message(message)
 
-if __name__ == "__main__":
-    main()
+            messages = trim_messages(
+                trim_messages_images(chat_history.messages, max_images=1),
+                token_counter=model,
+                strategy="last",
+                max_tokens=2000,
+                start_on="human",
+                end_on=("human", "tool"),
+                include_system=True,
+            )
+
+            async with message.channel.typing():
+                result = await graph.ainvoke(
+                    {"messages": messages},
+                    config={
+                        "configurable": {
+                            "thread_id": create_thread_id(message),
+                            "message": message,
+                        }
+                    },
+                )
+                await message.channel.send(result["messages"][-1].content)
+        except Exception as e:
+            logger.error(f"Error generating roast: {str(e)}")
+
+    @asynccontextmanager
+    async def lifespan(app: FastAPI):
+        # Initialize bot on startup
+        token = os.getenv("DISCORD_TOKEN")
+        if not token:
+            raise ValueError("DISCORD_TOKEN environment variable is not set")
+
+        # Start the bot in the background
+        discord_bot_task = asyncio.create_task(discord_bot.start(token))
+
+        yield
+
+        # Cleanup on shutdown
+        await discord_bot.close()
+        discord_bot_task.cancel()
+        with contextlib.suppress(asyncio.CancelledError):
+            await discord_bot_task
+
+    app = FastAPI(lifespan=lifespan)
+
+    @app.get("/healthz")
+    async def liveness_probe():
+        return {"status": "ok"}
+
+    @app.get("/readyz")
+    async def readiness_probe():
+        if discord_bot and discord_bot.is_ready():
+            return {"status": "ready"}
+        return JSONResponse(
+            content={"status": "not ready"},
+            status_code=503
+        )
+
+    @app.get("/livez")
+    async def startup_probe():
+        if discord_bot and not discord_bot.is_closed():
+            return {"status": "ready"}
+        return JSONResponse(
+            content={"status": "starting"},
+            status_code=503
+        )
+
+    return app

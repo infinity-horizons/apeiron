@@ -30,5 +30,5 @@ LABEL org.opencontainers.image.licenses="AGPL-3.0"
 WORKDIR /app
 COPY --from=builder /app .
 
-ENTRYPOINT ["/app/.venv/bin/python"]
-CMD ["-m", "apeiron.agent"]
+ENTRYPOINT ["/app/.venv/bin/uvicorn"]
+CMD ["--factory", "apeiron.agent:create_app"]

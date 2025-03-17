@@ -28,3 +28,18 @@ spec:
                 secretKeyRef:
                   name: apeiron
                   key: mistral_api_key
+          readinessProbe:
+            httpGet:
+              path: /health``
+              port: http
+            initialDelaySeconds: 30
+          livenessProbe:
+            httpGet:
+              path: /livez
+              port: http
+            initialDelaySeconds: 60
+          startupProbe:
+            httpGet:
+              path: /readyz
+              port: http
+            failureThreshold: 30
