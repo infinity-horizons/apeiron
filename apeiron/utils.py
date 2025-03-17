@@ -1,38 +1,9 @@
 import logging
-import os
 
 import discord
-import uvicorn
 from langchain_core.messages import BaseMessage
 
 logger = logging.getLogger(__name__)
-
-
-def get_logging_level() -> int:
-    """Get the logging level from the environment variable.
-    Returns:
-        Logging level as an integer
-    """
-    log_level_str = os.getenv("LOG_LEVEL", "INFO")
-    level_names = logging.getLevelNamesMapping()
-    try:
-        return level_names[log_level_str.upper()]
-    except KeyError as e:
-        raise ValueError(f"Invalid log level: {log_level_str}") from e
-
-
-def create_logging_handlers():
-    match os.getenv("LOG_FORMAT", "uvicorn"):
-        case "uvicorn":
-            handler = logging.StreamHandler()
-            handler.setFormatter(
-                uvicorn.logging.DefaultFormatter(
-                    "{levelprefix} {message}", style="{", use_colors=True
-                )
-            )
-            return [handler]
-        case _:
-            return []
 
 
 def trim_messages_images(

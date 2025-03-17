@@ -2,7 +2,7 @@ from discord.errors import Forbidden, NotFound
 from langchain_core.tools.base import ToolException
 from pydantic import BaseModel, Field
 
-from .base import BaseDiscordTool
+from apeiron.tools.discord.base import BaseDiscordTool
 
 
 class AddReactionSchema(BaseModel):
