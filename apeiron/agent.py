@@ -68,7 +68,49 @@ def create_app():
     if feature_gates_dict.get("AgentDiscordToolkit", False):
         tools = DiscordToolkit(client=discord_bot).get_tools()
     graph = create_agent(tools=tools, model=model)
-    create_bot(bot=discord_bot, model=model, pregel=graph)
+
+    # Discord message handler directly in create_app
+    @discord_bot.listen
+    async def on_message(message: discord.Message):
+        if is_client_user(discord_bot, message):
+            return
+
+        # Check if message is reply to bot or contains mention
+        if message.reference and message.reference.resolved:
+            if message.reference.resolved.author.id != discord_bot.user.id:
+                logger.debug(f"Message not replying to bot: {message.content}")
+                return
+        elif message.guild is not None and not discord_bot.user.mentioned_in(message):
+            logger.debug(f"Message not mentioning bot in guild channel: {message.content}")
+            return
+
+        try:
+            chat_history = DiscordChannelChatMessageHistory(discord_bot)
+            await chat_history.load_messages_from_message(message)
+
+            messages = trim_messages(
+                trim_messages_images(chat_history.messages, max_images=1),
+                token_counter=model,
+                strategy="last",
+                max_tokens=2000,
+                start_on="human",
+                end_on=("human", "tool"),
+                include_system=True,
+            )
+
+            async with message.channel.typing():
+                result = await graph.ainvoke(
+                    {"messages": messages},
+                    config={
+                        "configurable": {
+                            "thread_id": create_thread_id(message),
+                            "message": message,
+                        }
+                    },
+                )
+                await message.channel.send(result["messages"][-1].content)
+        except Exception as e:
+            logger.error(f"Error generating roast: {str(e)}")
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
@@ -113,54 +155,3 @@ def create_app():
         )
 
     return app
-
-
-def create_bot(bot: discord.Bot, model: BaseChatModel, pregel: Pregel):
-    """Create and configure the Discord client with all intents."""
-
-    @bot.listen
-    async def on_message(message: discord.Message):
-        if is_client_user(bot, message):
-            return
-
-        # Check if the message is a reply to the bot's message
-        if message.reference and message.reference.resolved:
-            if message.reference.resolved.author.id != bot.user.id:
-                logger.debug(f"Message not replying to bot: {message.content}")
-                return
-        # If not a reply, check for mention (only in guild channels)
-        elif message.guild is not None and not bot.user.mentioned_in(message):
-            logger.debug(
-                f"Message not mentioning bot in guild channel: {message.content}"
-            )
-            return
-
-        try:
-            chat_history = DiscordChannelChatMessageHistory(bot)
-            await chat_history.load_messages_from_message(message)
-
-            messages = trim_messages(
-                trim_messages_images(chat_history.messages, max_images=1),
-                token_counter=model,
-                strategy="last",
-                max_tokens=2000,
-                start_on="human",
-                end_on=("human", "tool"),
-                include_system=True,
-            )
-
-            async with message.channel.typing():
-                result = await pregel.ainvoke(
-                    {"messages": messages},
-                    config={
-                        "configurable": {
-                            "thread_id": create_thread_id(message),
-                            "message": message,
-                        }
-                    },
-                )
-                await message.channel.send(result["messages"][-1].content)
-        except Exception as e:
-            logger.error(f"Error generating roast: {str(e)}")
-
-    return bot
