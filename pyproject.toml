@@ -16,7 +16,6 @@ dependencies = [
   "mistral-common>=1.5.3",
   "tiktoken>=0.9.0",
   "mlflow[langchain]>=2.20.3",
-  "boto3>=1.37.13",
 ]
 
 [dependency-groups]
