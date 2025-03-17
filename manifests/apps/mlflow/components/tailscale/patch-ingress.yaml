@@ -1,0 +1,11 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mlflow
+  namespace: infinity-horizons
+  annotations:
+    tailscale.com/tags: tag:web
+  labels:
+    tailscale.com/proxy-class: nishir-mlflow
+spec:
+  ingressClassName: tailscale
