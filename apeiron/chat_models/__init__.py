@@ -1,6 +1,6 @@
 from langchain_core.language_models import BaseChatModel
 
-from .mistral import create_chat_model as create_chat_model_mistral
+from apeiron.chat_models.mistral import create_chat_model as create_chat_model_mistral
 
 
 def create_chat_model(provider_name: str, model_name: str, **kwargs) -> BaseChatModel:

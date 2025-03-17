@@ -2,11 +2,11 @@ from typing import Any
 
 from langchain_core.tools.base import BaseTool, BaseToolkit
 
-from ...tools.discord.add_reaction import DiscordAddReactionTool
-from ...tools.discord.list_emojis import DiscordListEmojisTool
-from ...tools.discord.list_messages import DiscordListMessagesTool
-from ...tools.discord.reply_message import DiscordReplyMessageTool
-from ...tools.discord.send_message import DiscordSendMessageTool
+from apeiron.tools.discord.add_reaction import DiscordAddReactionTool
+from apeiron.tools.discord.list_emojis import DiscordListEmojisTool
+from apeiron.tools.discord.list_messages import DiscordListMessagesTool
+from apeiron.tools.discord.reply_message import DiscordReplyMessageTool
+from apeiron.tools.discord.send_message import DiscordSendMessageTool
 
 
 class DiscordToolkit(BaseToolkit):
