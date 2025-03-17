@@ -5,7 +5,6 @@ from contextlib import asynccontextmanager, suppress
 
 import discord
 import mlflow
-import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from langchain_core.messages import trim_messages
@@ -15,23 +14,15 @@ from .chat_message_histories.discord import DiscordChannelChatMessageHistory
 from .chat_models import create_chat_model
 from .toolkits.discord.toolkit import DiscordToolkit
 from .tools.discord.utils import is_client_user
-from .utils import create_thread_id, parse_feature_gates, trim_messages_images
+from .utils import (
+    create_logging_handlers,
+    create_thread_id,
+    get_logging_level,
+    parse_feature_gates,
+    trim_messages_images,
+)
 
 logger = logging.getLogger(__name__)
-
-
-def create_logging_handlers():
-    match os.getenv("LOG_FORMAT", "uvicorn"):
-        case "uvicorn":
-            handler = logging.StreamHandler()
-            handler.setFormatter(
-                uvicorn.logging.DefaultFormatter(
-                    "{levelprefix} {message}", style="{", use_colors=True
-                )
-            )
-            return [handler]
-        case _:
-            return []
 
 
 def create_app():
@@ -39,14 +30,7 @@ def create_app():
     mlflow.langchain.autolog()
 
     # Get log level from environment variable, default to INFO if not set
-    log_level_str = os.getenv("LOG_LEVEL", "INFO")
-    level_names = logging.getLevelNamesMapping()
-    try:
-        log_level = level_names[log_level_str.upper()]
-    except KeyError as e:
-        raise ValueError(f"Invalid log level: {log_level_str}") from e
-
-    logging.basicConfig(level=log_level, handlers=create_logging_handlers())
+    logging.basicConfig(level=get_logging_level(), handlers=create_logging_handlers())
 
     # Parse environment variables
     agent_model = os.getenv("AGENT_MODEL", "pixtral-12b-2409")
