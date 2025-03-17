@@ -25,9 +25,7 @@ def create_logging_handlers():
         case "uvicorn":
             handler = logging.StreamHandler()
             handler.setFormatter(
-                uvicorn.logging.DefaultFormatter(
-                    "{levelprefix} {message}", style="{", use_colors=True
-                )
+                uvicorn.logging.DefaultFormatter("%(levelprefix)s %(message)s")
             )
             return [handler]
         case _:
