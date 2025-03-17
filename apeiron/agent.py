@@ -1,9 +1,12 @@
 import logging
 import os
+from contextlib import asynccontextmanager
 
+import asyncio
 import mlflow
-import click
 import discord
+import uvicorn
+from fastapi import FastAPI
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import trim_messages
 from langgraph.pregel import Pregel
@@ -16,6 +19,91 @@ from .tools.discord.utils import is_client_user
 from .utils import create_thread_id, parse_feature_gates, trim_messages_images
 
 logger = logging.getLogger(__name__)
+
+
+def create_app():
+    # Intrumentalise the langchain_core with mlflow
+    mlflow.langchain.autolog()
+
+    # Get log level from environment variable, default to INFO if not set
+    log_level_str = os.getenv("LOG_LEVEL", "INFO")
+    level_names = logging.getLevelNamesMapping()
+    try:
+        log_level = level_names[log_level_str.upper()]
+    except KeyError as e:
+        raise ValueError(f"Invalid log level: {log_level_str}") from e
+
+    handler = logging.StreamHandler()
+    handler.setFormatter(
+        uvicorn.logging.ColourizedFormatter(
+            "{levelprefix} {message}", style="{", use_colors=True
+        )
+    )
+    logging.basicConfig(level=log_level, handlers=[handler])
+
+    # Parse environment variables
+    agent_model = os.getenv("AGENT_MODEL", "pixtral-12b-2409")
+    agent_provider = os.getenv("AGENT_PROVIDER", "mistralai")
+    feature_gates_str = os.getenv("FEATURE_GATES", "")
+    feature_gates_dict = parse_feature_gates(feature_gates_str)
+
+    # Initialize the MistralAI model
+    model = create_chat_model(provider_name=agent_provider, model_name=agent_model)
+
+    # Initialize the Discord client
+    # Set up intents with message content and DM permissions
+    intents = discord.Intents.default()
+    intents.message_content = True
+    intents.dm_messages = True
+
+    discord_bot = discord.Bot(intents=intents)
+    tools = []
+    if feature_gates_dict.get("AgentDiscordToolkit", False):
+        tools = DiscordToolkit(client=discord_bot).get_tools()
+    graph = create_agent(tools=tools, model=model)
+    create_bot(bot=discord_bot, model=model, pregel=graph)
+
+    @asynccontextmanager
+    async def lifespan(app: FastAPI):
+        # Initialize bot on startup
+        token = os.getenv("DISCORD_TOKEN")
+        if not token:
+            raise ValueError("DISCORD_TOKEN environment variable is not set")
+
+        # Start the bot in the background
+        await discord_bot.connect(token)
+        asyncio.create_task(discord_bot.connect())
+
+        yield
+
+        # Cleanup on shutdown
+        await discord_bot.close()
+
+    app = FastAPI(lifespan=lifespan)
+
+    @app.get("/healthz")
+    async def liveness_probe():
+        return {"status": "ok"}
+
+    @app.get("/readyz")
+    async def readiness_probe():
+        if discord_bot and discord_bot.is_ready():
+            return {"status": "ready"}
+        return JSONResponse(
+            content={"status": "not ready"},
+            status_code=503
+        )
+
+    @app.get("/livez")
+    async def startup_probe():
+        if discord_bot and not discord_bot.is_closed():
+            return {"status": "ready"}
+        return JSONResponse(
+            content={"status": "starting"},
+            status_code=503
+        )
+
+    return app
 
 
 def create_bot(bot: discord.Bot, model: BaseChatModel, pregel: Pregel):
@@ -67,60 +155,3 @@ def create_bot(bot: discord.Bot, model: BaseChatModel, pregel: Pregel):
             logger.error(f"Error generating roast: {str(e)}")
 
     return bot
-
-
-def init():
-    # Intrumentalise the langchain_core with mlflow
-    mlflow.langchain.autolog()
-
-    # Get log level from environment variable, default to INFO if not set
-    log_level_str = os.getenv("LOG_LEVEL", "INFO")
-    level_names = logging.getLevelNamesMapping()
-    try:
-        log_level = level_names[log_level_str.upper()]
-    except KeyError as e:
-        raise ValueError(f"Invalid log level: {log_level_str}") from e
-
-    logging.basicConfig(level=log_level)
-
-
-@click.command()
-@click.option("--agent-model", help="Agent model", default="pixtral-12b-2409")
-@click.option("--agent-provider", help="Agent provider", default="mistralai")
-@click.option("--feature-gates", help="Enable feature gates", default="")
-def main(
-    agent_model: str,
-    agent_provider: str,
-    feature_gates: str,
-):
-    """Run the Discord bot agent"""
-    init()
-
-    # Parse feature gates
-    feature_gates_dict = parse_feature_gates(feature_gates)
-
-    # Initialize the MistralAI model
-    model = create_chat_model(provider_name=agent_provider, model_name=agent_model)
-
-    # Initialize the Discord client
-    # Set up intents with message content and DM permissions
-    intents = discord.Intents.default()
-    intents.message_content = True
-    intents.dm_messages = True
-
-    discord_bot = discord.Bot(intents=intents)
-    tools = []
-    if feature_gates_dict.get("AgentDiscordToolkit", False):
-        tools = DiscordToolkit(client=discord_bot).get_tools()
-    graph = create_agent(tools=tools, model=model)
-    bot = create_bot(bot=discord_bot, model=model, pregel=graph)
-
-    token = os.getenv("DISCORD_TOKEN")
-    if not token:
-        raise ValueError("DISCORD_TOKEN environment variable is not set")
-
-    bot.run(token)
-
-
-if __name__ == "__main__":
-    main()
