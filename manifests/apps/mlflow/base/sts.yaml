@@ -51,5 +51,19 @@ spec:
                   name: mlflow
                   key: s3_endpoint_url
           ports:
-            - name: http
-              containerPort: 5000
+            - containerPort: 5000
+              name: http
+          volumeMounts:
+            - name: mlflow-runs
+              mountPath: /app/mlruns
+            - name: mlflow-artifacts
+              mountPath: /app/mlartifacts
+      securityContext:
+        fsGroup: 1001
+      volumes:
+        - name: mlflow-runs
+          persistentVolumeClaim:
+            claimName: mlflow-runs-data
+        - name: mlflow-artifacts
+          persistentVolumeClaim:
+            claimName: mlflow-artifacts-data
