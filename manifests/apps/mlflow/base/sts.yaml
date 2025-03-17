@@ -48,3 +48,6 @@ spec:
                 configMapKeyRef:
                   name: mlflow
                   key: s3_endpoint_url
+          ports:
+            - name: http
+              containerPort: 5000

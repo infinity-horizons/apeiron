@@ -3,4 +3,3 @@ kind: Kustomization
 resources:
   - ../../../apps/apeiron/overlays/default
   - ../../../apps/mlflow/overlays/default
-  - pvc.yaml

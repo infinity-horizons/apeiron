@@ -36,6 +36,6 @@ resource "kubernetes_config_map" "mlflow" {
   }
   data = {
     artifacts_destination = "s3://${var.mlflow_server.bucket}/"
-    s3_endpoint_url       = "https://${var.mlflow_server.endpoint}/"
+    s3_endpoint_url       = "https://${var.mlflow_server.endpoint}"
   }
 }
