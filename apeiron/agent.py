@@ -4,20 +4,18 @@ import os
 from contextlib import asynccontextmanager, suppress
 
 import discord
-import mlflow
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from langchain_core.messages import trim_messages
 
-from .agents.operator_6o import create_agent
-from .chat_message_histories.discord import DiscordChannelChatMessageHistory
-from .chat_models import create_chat_model
-from .toolkits.discord.toolkit import DiscordToolkit
-from .tools.discord.utils import is_client_user
-from .utils import (
-    create_logging_handlers,
+import apeiron.logging
+from apeiron.agents.operator_6o import create_agent
+from apeiron.chat_message_histories.discord import DiscordChannelChatMessageHistory
+from apeiron.chat_models import create_chat_model
+from apeiron.toolkits.discord.toolkit import DiscordToolkit
+from apeiron.tools.discord.base.utils import is_client_user
+from apeiron.utils import (
     create_thread_id,
-    get_logging_level,
     parse_feature_gates,
     trim_messages_images,
 )
@@ -26,11 +24,7 @@ logger = logging.getLogger(__name__)
 
 
 def create_app():
-    # Intrumentalise the langchain_core with mlflow
-    mlflow.langchain.autolog()
-
-    # Get log level from environment variable, default to INFO if not set
-    logging.basicConfig(level=get_logging_level(), handlers=create_logging_handlers())
+    apeiron.logging.init()
 
     # Parse environment variables
     agent_model = os.getenv("AGENT_MODEL", "pixtral-12b-2409")
