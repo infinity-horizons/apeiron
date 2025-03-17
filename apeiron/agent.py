@@ -1,8 +1,7 @@
 import asyncio
-import contextlib
 import logging
 import os
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, suppress
 
 import discord
 import mlflow
@@ -130,7 +129,7 @@ def create_app():
         # Cleanup on shutdown
         await bot.close()
         bot_task.cancel()
-        with contextlib.suppress(asyncio.CancelledError):
+        with suppress(asyncio.CancelledError):
             await bot_task
 
     app = FastAPI(lifespan=lifespan)
