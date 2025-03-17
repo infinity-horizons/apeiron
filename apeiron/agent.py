@@ -66,31 +66,31 @@ def create_app():
     intents.message_content = True
     intents.dm_messages = True
 
-    discord_bot = discord.Bot(intents=intents)
+    bot = discord.Bot(intents=intents)
     tools = []
     if feature_gates_dict.get("AgentDiscordToolkit", False):
-        tools = DiscordToolkit(client=discord_bot).get_tools()
+        tools = DiscordToolkit(client=bot).get_tools()
     graph = create_agent(tools=tools, model=model)
 
     # Discord message handler directly in create_app
-    @discord_bot.listen
+    @bot.listen
     async def on_message(message: discord.Message):
-        if is_client_user(discord_bot, message):
+        if is_client_user(bot, message):
             return
 
         # Check if message is reply to bot or contains mention
         if message.reference and message.reference.resolved:
-            if message.reference.resolved.author.id != discord_bot.user.id:
+            if message.reference.resolved.author.id != bot.user.id:
                 logger.debug(f"Message not replying to bot: {message.content}")
                 return
-        elif message.guild is not None and not discord_bot.user.mentioned_in(message):
+        elif message.guild is not None and not bot.user.mentioned_in(message):
             logger.debug(
                 f"Message not mentioning bot in guild channel: {message.content}"
             )
             return
 
         try:
-            chat_history = DiscordChannelChatMessageHistory(discord_bot)
+            chat_history = DiscordChannelChatMessageHistory(bot)
             await chat_history.load_messages_from_message(message)
 
             messages = trim_messages(
@@ -125,15 +125,15 @@ def create_app():
             raise ValueError("DISCORD_TOKEN environment variable is not set")
 
         # Start the bot in the background
-        discord_bot_task = asyncio.create_task(discord_bot.start(token))
+        bot_task = asyncio.create_task(bot.start(token))
 
         yield
 
         # Cleanup on shutdown
-        await discord_bot.close()
-        discord_bot_task.cancel()
+        await bot.close()
+        bot_task.cancel()
         with contextlib.suppress(asyncio.CancelledError):
-            await discord_bot_task
+            await bot_task
 
     app = FastAPI(lifespan=lifespan)
 
@@ -143,13 +143,13 @@ def create_app():
 
     @app.get("/readyz")
     async def readiness_probe():
-        if discord_bot and discord_bot.is_ready():
+        if bot and bot.is_ready():
             return {"status": "ready"}
         return JSONResponse(content={"status": "not ready"}, status_code=503)
 
     @app.get("/livez")
     async def startup_probe():
-        if discord_bot and not discord_bot.is_closed():
+        if bot and not bot.is_closed():
             return {"status": "ready"}
         return JSONResponse(content={"status": "starting"}, status_code=503)
 
