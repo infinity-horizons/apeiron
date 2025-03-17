@@ -8,7 +8,7 @@ from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.prebuilt import create_react_agent
 from langgraph.store.memory import InMemoryStore
 
-from .utils import load_prompt
+from apeiron.agents.utils import load_prompt
 
 logger = logging.getLogger(__name__)
 

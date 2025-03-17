@@ -54,7 +54,7 @@ uv sync
 3. Run the application:
 
 ```bash
-pyton -m apeiron.agent --verbose --debug
+uvicorn --factory apeiron.app:create_app
 ```
 
 ## Deployment
