@@ -8,7 +8,6 @@ spec:
     spec:
       containers:
         - name: mlflow
-          image: mlflow
           env:
             - name: MLFLOW_BACKEND_STORE_URI
               value: sqlite:///data/mlflow.db
