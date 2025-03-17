@@ -22,8 +22,34 @@ spec:
             - server
             - --host=0.0.0.0
             - --port=5000
-            - --backend-store-uri=sqlite:///data/mlflow/mlflow.db
-            - --default-artifact-root=/data/mlflow/artifacts
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: mlflow
+                  key: access_key_id
+            - name: AWS_DEFAULT_REGION
+              valueFrom:
+                secretKeyRef:
+                  name: mlflow
+                  key: region
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: mlflow
+                  key: secret_access_key
+            - name: MLFLOW_ARTIFACTS_DESTINATION
+              valueFrom:
+                configMapKeyRef:
+                  name: mlflow
+                  key: artifacts_destination
+            - name: MLFLOW_BACKEND_STORE_URI
+              value: sqlite:///data/mlflow/mlflow.db
+            - name: MLFLOW_S3_ENDPOINT_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: mlflow
+                  key: s3_endpoint_url
           ports:
             - containerPort: 5000
               name: http
