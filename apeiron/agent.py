@@ -9,9 +9,7 @@ import mlflow
 import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
-from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import trim_messages
-from langgraph.pregel import Pregel
 
 from .agents.operator_6o import create_agent
 from .chat_message_histories.discord import DiscordChannelChatMessageHistory
@@ -143,13 +141,13 @@ def create_app():
 
     @app.get("/readyz")
     async def readiness_probe():
-        if bot and bot.is_ready():
+        if bot.is_ready():
             return {"status": "ready"}
         return JSONResponse(content={"status": "not ready"}, status_code=503)
 
     @app.get("/livez")
     async def startup_probe():
-        if bot and not bot.is_closed():
+        if not bot.is_closed():
             return {"status": "ready"}
         return JSONResponse(content={"status": "starting"}, status_code=503)
 
