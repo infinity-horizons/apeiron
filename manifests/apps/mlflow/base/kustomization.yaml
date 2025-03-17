@@ -6,9 +6,9 @@ images:
     newTag: 2.21.0
 resources:
   - ingress.yaml
-  - svc.yaml
-  - sts.yaml
   - pvc.yaml
+  - sts.yaml
+  - svc.yaml
 labels:
   - pairs:
       app.kubernetes.io/name: mlflow

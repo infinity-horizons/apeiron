@@ -2,11 +2,11 @@ apiVersion: skaffold/v4beta12
 kind: Config
 metadata:
   name: apeiron
-build:
-  artifacts:
-    - image: ghcr.io/infinity-horizons/apeiron
-  local:
-    useBuildkit: true
+# build:
+#   artifacts:
+#     - image: ghcr.io/infinity-horizons/apeiron
+#   local:
+#     useBuildkit: true
 manifests:
   kustomize:
     paths:

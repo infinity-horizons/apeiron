@@ -1,7 +1,19 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: mlflow-data
+  name: mlflow-runs-data
+  namespace: infinity-horizons
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 512Mi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mlflow-artifacts-data
   namespace: infinity-horizons
 spec:
   accessModes:
@@ -9,6 +21,3 @@ spec:
   resources:
     requests:
       storage: 4Gi
-  storageClassName: nishir-standard
-  volumeMode: Filesystem
-  volumeName: mlflow-data
