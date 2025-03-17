@@ -125,7 +125,7 @@ def create_app():
     @app.get("/livez")
     async def startup_probe():
         if not bot.is_closed():
-            return {"status": "ready"}
-        return JSONResponse(content={"status": "starting"}, status_code=503)
+            return {"status": "live"}
+        return JSONResponse(content={"status": "not live"}, status_code=503)
 
     return app
