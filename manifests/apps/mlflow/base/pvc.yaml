@@ -9,6 +9,8 @@ spec:
   resources:
     requests:
       storage: 512Mi
+  storageClassName: nishir-standard
+  volumeMode: Filesystem
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -21,3 +23,5 @@ spec:
   resources:
     requests:
       storage: 4Gi
+  storageClassName: nishir-standard
+  volumeMode: Filesystem
