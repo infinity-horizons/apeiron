@@ -1,4 +1,5 @@
 import asyncio
+import contextlib
 import logging
 import os
 from contextlib import asynccontextmanager
@@ -21,6 +22,7 @@ from .utils import create_thread_id, parse_feature_gates, trim_messages_images
 
 logger = logging.getLogger(__name__)
 
+
 def create_logging_handlers():
     match os.getenv("LOG_FORMAT", "uvicorn"):
         case "uvicorn":
@@ -33,6 +35,7 @@ def create_logging_handlers():
             return [handler]
         case _:
             return []
+
 
 def create_app():
     # Intrumentalise the langchain_core with mlflow
@@ -81,7 +84,9 @@ def create_app():
                 logger.debug(f"Message not replying to bot: {message.content}")
                 return
         elif message.guild is not None and not discord_bot.user.mentioned_in(message):
-            logger.debug(f"Message not mentioning bot in guild channel: {message.content}")
+            logger.debug(
+                f"Message not mentioning bot in guild channel: {message.content}"
+            )
             return
 
         try:
@@ -140,18 +145,12 @@ def create_app():
     async def readiness_probe():
         if discord_bot and discord_bot.is_ready():
             return {"status": "ready"}
-        return JSONResponse(
-            content={"status": "not ready"},
-            status_code=503
-        )
+        return JSONResponse(content={"status": "not ready"}, status_code=503)
 
     @app.get("/livez")
     async def startup_probe():
         if discord_bot and not discord_bot.is_closed():
             return {"status": "ready"}
-        return JSONResponse(
-            content={"status": "starting"},
-            status_code=503
-        )
+        return JSONResponse(content={"status": "starting"}, status_code=503)
 
     return app
