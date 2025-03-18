@@ -11,6 +11,7 @@ spec:
       storage: 512Mi
   storageClassName: nishir-standard
   volumeMode: Filesystem
+  volumeName: mlflow-runs-data
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -25,3 +26,4 @@ spec:
       storage: 4Gi
   storageClassName: nishir-standard
   volumeMode: Filesystem
+  volumeName: mlflow-artifacts-data
