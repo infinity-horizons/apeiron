@@ -18,10 +18,13 @@ dependencies = [
   "mlflow[langchain]>=2.20.3",
   "uvicorn>=0.34.0",
   "fastapi>=0.115.11",
+  "llama-index>=0.12.24",
+  "llama-index-llms-mistralai>=0.4.0",
 ]
 
 [dependency-groups]
 dev = ["ruff>=0.9.9"]
+notebook = ["jupyter>=1.1.1"]
 
 [tool.ruff.lint]
 select = [
