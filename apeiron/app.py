@@ -6,19 +6,19 @@ from contextlib import asynccontextmanager, suppress
 import discord
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
-from langchain_core.messages import trim_messages
 
 import apeiron.logging
 from apeiron.agents.operator_6o import create_agent
-from apeiron.chat_message_histories.discord import DiscordChannelChatMessageHistory
 from apeiron.chat_models import create_chat_model
 from apeiron.toolkits.discord.toolkit import DiscordToolkit
-from apeiron.tools.discord.utils import is_client_user
-from apeiron.utils import (
+from apeiron.tools.discord.utils import (
+    create_chat_message,
     create_thread_id,
-    parse_feature_gates,
-    trim_messages_images,
+    is_bot_mentioned,
+    is_bot_message,
+    is_private_channel,
 )
+from apeiron.utils import parse_feature_gates
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +30,7 @@ def create_app():
     agent_model = os.getenv("AGENT_MODEL", "pixtral-12b-2409")
     agent_provider = os.getenv("AGENT_PROVIDER", "mistralai")
     feature_gates_str = os.getenv("FEATURE_GATES", "")
-    feature_gates_dict = parse_feature_gates(feature_gates_str)
+    _feature_gates_dict = parse_feature_gates(feature_gates_str)
 
     # Initialize the MistralAI model
     model = create_chat_model(provider_name=agent_provider, model_name=agent_model)
@@ -41,54 +41,33 @@ def create_app():
     intents.message_content = True
     intents.dm_messages = True
 
-    bot = discord.AutoShardedBot(intents=intents)
-    tools = []
-    if feature_gates_dict.get("AgentDiscordToolkit", False):
-        tools = DiscordToolkit(client=bot).get_tools()
+    bot = discord.Bot(intents=intents)
+    tools = DiscordToolkit(client=bot).get_tools()
     graph = create_agent(tools=tools, model=model)
 
     # Discord message handler directly in create_app
     @bot.listen
     async def on_message(message: discord.Message):
-        if is_client_user(bot, message):
+        if is_bot_message(bot, message):
             return
 
-        # Check if message is reply to bot or contains mention
-        if message.reference and message.reference.resolved:
-            if message.reference.resolved.author.id != bot.user.id:
-                logger.debug(f"Message not replying to bot: {message.content}")
-                return
-        elif message.guild is not None and not bot.user.mentioned_in(message):
+        if not is_bot_mentioned(bot, message) and not is_private_channel(message):
             logger.debug(
-                f"Message not mentioning bot in guild channel: {message.content}"
+                f"Message from {message.author.name} in {message.channel.name} "
             )
             return
 
         try:
-            chat_history = DiscordChannelChatMessageHistory(bot)
-            await chat_history.load_messages_from_message(message)
-
-            messages = trim_messages(
-                trim_messages_images(chat_history.messages, max_images=1),
-                token_counter=model,
-                strategy="last",
-                max_tokens=2000,
-                start_on="human",
-                end_on=("human", "tool"),
-                include_system=True,
-            )
-
+            messages = [create_chat_message(message)]
             async with message.channel.typing():
-                result = await graph.ainvoke(
+                _result = await graph.ainvoke(
                     {"messages": messages},
                     config={
                         "configurable": {
                             "thread_id": create_thread_id(message),
-                            "message": message,
                         }
                     },
                 )
-                await message.channel.send(result["messages"][-1].content)
         except Exception as e:
             logger.error(f"Error generating roast: {str(e)}")
 

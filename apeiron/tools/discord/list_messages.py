@@ -1,8 +1,63 @@
+from discord import Message
 from discord.errors import Forbidden, NotFound
+from langchain_core.messages import ChatMessage
 from langchain_core.tools.base import ToolException
 from pydantic import BaseModel, Field
 
 from apeiron.tools.discord.base import BaseDiscordTool
+
+
+def to_dict(message: Message) -> dict:
+    """Create message data structure."""
+    attachments_data = []
+    for attachment in message.attachments:
+        attachment_info = {
+            "filename": attachment.filename,
+            "url": attachment.url,
+            "size": attachment.size,
+            "content_type": attachment.content_type,
+        }
+        if attachment.content_type and attachment.content_type.startswith("image/"):
+            attachment_info.update(
+                {
+                    "type": "image",
+                    "dimensions": {
+                        "width": attachment.width,
+                        "height": attachment.height,
+                    },
+                }
+            )
+        attachments_data.append(attachment_info)
+
+    message_data = {
+        "content": message.content,
+        "id": str(message.id),
+        "author": {
+            "id": str(message.author.id),
+            "name": message.author.name,
+            "display_name": message.author.display_name,
+            "bot": message.author.bot,
+            "avatar_url": str(message.author.avatar.url)
+            if message.author.avatar
+            else None,
+        },
+        "channel_id": str(message.channel.id),
+        "guild_id": str(message.guild.id) if message.guild else None,
+        "timestamp": str(message.created_at),
+        "edited_timestamp": str(message.edited_at) if message.edited_at else None,
+        "attachments": attachments_data,
+    }
+
+    if message.reference and message.reference.resolved:
+        ref = message.reference.resolved
+        message_data["reference"] = {
+            "id": str(ref.id),
+            "content": ref.content,
+            "author": str(ref.author),
+            "timestamp": str(ref.created_at),
+        }
+
+    return message_data
 
 
 class ListMessagesSchema(BaseModel):
@@ -19,8 +74,6 @@ class ListMessagesSchema(BaseModel):
 
 
 class DiscordListMessagesTool(BaseDiscordTool):
-    """Tool for reading messages from a Discord channel with optional filters."""
-
     name: str = "list_messages"
     description: str = "Read messages from a Discord channel with optional filters"
     args_schema: type[ListMessagesSchema] = ListMessagesSchema
@@ -31,39 +84,18 @@ class DiscordListMessagesTool(BaseDiscordTool):
         before: str | None = None,
         after: str | None = None,
         limit: int = 100,
-    ) -> list[dict]:
-        """Read messages from a Discord channel with optional filters.
-
-        Args:
-            channel_id: ID of the channel to read messages from
-            before: Optional message ID to read messages before
-            after: Optional message ID to read messages after
-            limit: Number of messages to retrieve (max 100)
-
-        Returns:
-            list[dict]: List containing message objects with metadata and content
-        """
+    ) -> list[ChatMessage]:
         try:
             channel = await self.client.fetch_channel(channel_id)
-            messages = []
             kwargs = {"limit": limit}
             if before:
                 kwargs["before"] = before
             if after:
                 kwargs["after"] = after
+
+            messages = []
             async for message in channel.history(**kwargs):
-                ref_id = None
-                if message.reference:
-                    ref_id = str(message.reference.message_id)
-                messages.append(
-                    {
-                        "id": str(message.id),
-                        "content": message.content,
-                        "author": str(message.author),
-                        "timestamp": str(message.created_at),
-                        "reference": ref_id,
-                    }
-                )
+                messages.append(to_dict(message))
             return messages
         except (Forbidden, NotFound) as e:
             raise ToolException(f"Failed to read messages: {str(e)}") from e

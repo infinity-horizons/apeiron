@@ -3,6 +3,7 @@ import os
 
 import mlflow
 import uvicorn
+from langchain.globals import set_debug, set_verbose
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +34,10 @@ def create_logging_handlers():
 
 
 def init():
+    # Set langchain verbosity from environment variables
+    set_verbose(bool(os.getenv("LANGCHAIN_VERBOSE", "")))
+    set_debug(bool(os.getenv("LANGCHAIN_DEBUG", "")))
+
     # Intrumentalise the langchain_core with mlflow
     mlflow.langchain.autolog()
 
