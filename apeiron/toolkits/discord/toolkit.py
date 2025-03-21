@@ -3,9 +3,9 @@ from typing import Any
 from langchain_core.tools.base import BaseTool, BaseToolkit
 
 from apeiron.tools.discord.add_reaction import DiscordAddReactionTool
+from apeiron.tools.discord.get_user import DiscordGetUserTool
 from apeiron.tools.discord.list_emojis import DiscordListEmojisTool
 from apeiron.tools.discord.list_messages import DiscordListMessagesTool
-from apeiron.tools.discord.profile import DiscordGetUserTool
 from apeiron.tools.discord.reply_message import DiscordReplyMessageTool
 from apeiron.tools.discord.send_message import DiscordSendMessageTool
 
