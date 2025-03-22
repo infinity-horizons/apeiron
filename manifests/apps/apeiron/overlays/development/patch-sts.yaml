@@ -1,0 +1,13 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: apeiron
+  namespace: infinity-horizons
+spec:
+  template:
+    spec:
+      containers:
+        - name: apeiron
+          env:
+            - name: LOG_LEVEL
+              value: debug
