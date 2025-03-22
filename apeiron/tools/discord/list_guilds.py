@@ -1,9 +1,10 @@
 from pydantic import BaseModel
 
-from apeiron.tools.discord.get_guild import DiscordGetGuildTool, to_dict
+from apeiron.tools.discord.base import DiscordBaseTool
+from apeiron.tools.discord.get_guild import to_dict
 
 
-class DiscordListGuildsTool(DiscordGetGuildTool):
+class DiscordListGuildsTool(DiscordBaseTool):
     """Tool for listing Discord guilds the bot is a member of."""
 
     name: str = "list_guilds"
