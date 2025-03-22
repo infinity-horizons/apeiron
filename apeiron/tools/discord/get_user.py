@@ -18,7 +18,7 @@ def to_dict(user: User) -> dict:
 
 
 class DiscordGetUserInput(BaseModel):
-    user_id: str = Field(description="Discord user ID to look up")
+    user_id: int = Field(description="Discord user ID to look up")
 
 
 class DiscordGetUserTool(BaseTool):
@@ -32,7 +32,7 @@ class DiscordGetUserTool(BaseTool):
         super().__init__()
         self.client = client
 
-        async def _arun(self, user_id: str) -> dict:
+        async def _arun(self, user_id: int) -> dict:
             """Get user profile information."""
-            user = await self.client.fetch_user(int(user_id))
+            user = await self.client.fetch_user(user_id)
             return to_dict(user)

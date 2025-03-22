@@ -29,9 +29,9 @@ class DiscordGetEmojiInput(BaseModel):
 class DiscordGetEmojiTool(BaseDiscordTool):
     """Tool for retrieving a specific Discord emoji."""
 
-    name = "get_emoji"
-    description = "Get a specific emoji from a Discord guild"
-    args_schema = DiscordGetEmojiInput
+    name: str = "get_emoji"
+    description: str = "Get a specific emoji from a Discord guild"
+    args_schema: type[DiscordGetEmojiInput] = DiscordGetEmojiInput
 
     async def _arun(self, guild_id: int, emoji_id: int) -> dict:
         """Get a specific emoji."""

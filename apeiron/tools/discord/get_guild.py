@@ -26,9 +26,9 @@ def to_dict(guild: Guild) -> dict:
 class DiscordGetGuildTool(BaseTool):
     """Tool for retrieving Discord guild information."""
 
-    name = "get_guild"
-    description = "Get information about a Discord guild (server)"
-    args_schema = DiscordGetGuildInput
+    name: str = "get_guild"
+    description: str = "Get information about a Discord guild (server)"
+    args_schema: type[DiscordGetGuildInput] = DiscordGetGuildInput
 
     def __init__(self, client: Client):
         super().__init__()
