@@ -36,12 +36,7 @@ def create_app():
     model = create_chat_model(provider_name=agent_provider, model_name=agent_model)
 
     # Initialize the Discord client
-    # Set up intents with message content and DM permissions
-    intents = discord.Intents.default()
-    intents.message_content = True
-    intents.dm_messages = True
-
-    bot = discord.Bot(intents=intents)
+    bot = discord.AutoShardedBot(intents=discord.Intents.all())
     tools = DiscordToolkit(client=bot).get_tools()
     graph = create_agent(tools=tools, model=model)
 
