@@ -21,6 +21,10 @@ class DiscordToolkit(BaseToolkit):
     client: Any = None  #: :meta private:
 
     def get_tools(self) -> list[BaseTool]:
+        """Get the tools in the toolkit.
+        Returns:
+            List of Discord tools.
+        """
         return [
             DiscordAddReactionTool(client=self.client),
             DiscordGetChannelTool(client=self.client),
