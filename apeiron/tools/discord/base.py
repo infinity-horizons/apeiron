@@ -1,4 +1,4 @@
-import discord
+from discord import Client
 from langchain_core.tools.base import BaseTool
 from pydantic import Field
 
@@ -6,7 +6,7 @@ from pydantic import Field
 class BaseDiscordTool(BaseTool):
     """Base class for Discord tools."""
 
-    client: discord.Client = Field(
+    client: Client = Field(
         exclude=True,
         repr=False,
         description="Discord client.",
