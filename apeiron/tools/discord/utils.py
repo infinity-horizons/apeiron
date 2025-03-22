@@ -55,7 +55,7 @@ def create_message_received_chat_message(message: Message) -> AIMessage | HumanM
 def create_thread_id_from_message(message: Message) -> str:
     """Create a thread ID from a Discord message."""
     return (
-        "/".join(["guild", "__private__"])
+        "/".join(["guild", "__private__", "channel", str(message.channel.id)])
         if message.guild is None
         else "/".join(["guild", str(message.guild.id)])
     )
