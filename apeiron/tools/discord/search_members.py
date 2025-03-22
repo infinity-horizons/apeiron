@@ -43,7 +43,7 @@ class DiscordSearchMembersTool(BaseDiscordTool):
             List of member dictionaries matching the search criteria.
         """
         if guild_id is None and config:
-            guild_id = config.configurable.get("guild_id")
+            guild_id = config.get("configurable").get("guild_id")
         guild = await self.client.fetch_guild(guild_id)
         members = await guild.search_members(query=query, limit=limit)
         return [to_dict(member) for member in members]

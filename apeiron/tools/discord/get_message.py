@@ -109,9 +109,9 @@ class DiscordGetMessageTool(BaseDiscordTool):
             ToolException: If there is an issue retrieving the message.
         """
         if not channel_id and config:
-            channel_id = config.configurable.get("channel_id")
+            channel_id = config.get("configurable").get("channel_id")
         if not message_id and config:
-            message_id = config.configurable.get("message_id")
+            message_id = config.get("configurable").get("message_id")
         try:
             channel = await self.client.fetch_channel(channel_id)
             message = await channel.fetch_message(message_id)

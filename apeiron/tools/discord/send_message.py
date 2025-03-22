@@ -77,7 +77,7 @@ class DiscordSendMessageTool(BaseDiscordTool):
             ToolException: If the message fails to send.
         """
         if not channel_id and config:
-            channel_id = config.configurable.get("channel_id")
+            channel_id = config.get("configurable").get("channel_id")
         try:
             channel = await self.client.fetch_channel(channel_id)
             if not channel:

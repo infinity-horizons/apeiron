@@ -64,7 +64,7 @@ class DiscordListMembersTool(BaseDiscordTool):
             List of member dictionaries.
         """
         if not guild_id and config:
-            guild_id = config.configurable.get("guild_id")
+            guild_id = config.get("configurable").get("guild_id")
         guild = await self.client.fetch_guild(int(guild_id))
         kwargs = {"limit": limit}
         if before:

@@ -43,6 +43,6 @@ class DiscordGetUserTool(BaseDiscordTool):
             Dictionary containing user information.
         """
         if user_id is None and config:
-            user_id = config.configurable.get("user_id")
+            user_id = config.get("configurable").get("user_id")
         user = await self.client.fetch_user(user_id)
         return to_dict(user)

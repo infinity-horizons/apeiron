@@ -47,9 +47,9 @@ class DiscordAddReactionTool(BaseDiscordTool):
             ToolException: If the reaction addition fails.
         """
         if message_id is None and config:
-            message_id = config.configurable.get("message_id")
+            message_id = config.get("configurable").get("message_id")
         if channel_id is None and config:
-            channel_id = config.configurable.get("channel_id")
+            channel_id = config.get("configurable").get("channel_id")
         try:
             channel = await self.client.fetch_channel(channel_id)
             message = await channel.fetch_message(message_id)

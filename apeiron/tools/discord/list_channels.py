@@ -48,7 +48,7 @@ class DiscordListChannelsTool(BaseDiscordTool):
             List of channel dictionaries.
         """
         if guild_id is None and config:
-            guild_id = config.configurable.get("guild_id")
+            guild_id = config.get("configurable").get("guild_id")
         guild = await self.client.fetch_guild(guild_id)
         channels = await guild.fetch_channels()
         return [to_dict(channel) for channel in channels]
