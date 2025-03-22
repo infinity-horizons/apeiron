@@ -18,6 +18,23 @@ class SendMessageSchema(BaseModel):
     embeds: list[dict] | None = Field(None, description="List of embed dictionaries")
     files: list[str] | None = Field(None, description="List of file paths to send")
     reference: int | None = Field(None, description="Message ID to reply to")
+    stickers: list[int] | None = Field(None, description="List of sticker IDs to send")
+    suppress_embeds: bool = Field(
+        False, description="Whether to suppress embeds in this message"
+    )
+    allowed_mentions: dict | None = Field(
+        None, description="Controls which mentions are allowed in the message"
+    )
+    components: list[dict] | None = Field(
+        None, description="Message components (buttons, select menus, etc.)"
+    )
+    thread_name: str | None = Field(
+        None, description="Creates a thread with this name from this message"
+    )
+    silent: bool = Field(
+        False,
+        description="Whether to send the message without triggering notifications",
+    )
 
 
 class DiscordSendMessageTool(BaseDiscordTool):
@@ -35,6 +52,12 @@ class DiscordSendMessageTool(BaseDiscordTool):
         embeds: list[dict] | None = None,
         files: list[str] | None = None,
         reference: int | None = None,
+        stickers: list[int] | None = None,
+        suppress_embeds: bool = False,
+        allowed_mentions: dict | None = None,
+        components: list[dict] | None = None,
+        thread_name: str | None = None,
+        silent: bool = False,
         config: RunnableConfig | None = None,
     ) -> str:
         """Send a message to a Discord channel.
@@ -82,7 +105,16 @@ class DiscordSendMessageTool(BaseDiscordTool):
                 embeds=embed_objects,
                 files=file_objects,
                 reference=msg_reference,
+                stickers=stickers,
+                suppress_embeds=suppress_embeds,
+                allowed_mentions=allowed_mentions,
+                components=components,
+                silent=silent,
             )
+
+            # Create thread if name is provided
+            if thread_name and message:
+                await message.create_thread(name=thread_name)
             return f"Message sent successfully with ID: {message.id}"
         except (Forbidden, NotFound) as e:
             raise ToolException(f"Failed to send message: {str(e)}") from e

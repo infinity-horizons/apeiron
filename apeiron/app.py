@@ -3,7 +3,7 @@ import logging
 import os
 from contextlib import asynccontextmanager, suppress
 
-from discord import AutoShardedBot, Intents, Message
+from discord import AutoShardedBot, Client, Intents, Message
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from langchain_core.runnables import RunnableConfig
@@ -19,21 +19,14 @@ from apeiron.tools.discord.utils import (
     is_bot_message,
     is_private_channel,
 )
-from apeiron.utils import parse_feature_gates
 
 logger = logging.getLogger(__name__)
 
 
-def create_app():
-    apeiron.logging.init()
-
-    # Parse environment variables
+def create_bot():
+    # Initialize the MistralAI model
     agent_model = os.getenv("AGENT_MODEL", "pixtral-12b-2409")
     agent_provider = os.getenv("AGENT_PROVIDER", "mistralai")
-    feature_gates_str = os.getenv("FEATURE_GATES", "")
-    _feature_gates_dict = parse_feature_gates(feature_gates_str)
-
-    # Initialize the MistralAI model
     model = create_chat_model(provider_name=agent_provider, model_name=agent_model)
 
     # Initialize the Discord client
@@ -84,6 +77,10 @@ def create_app():
         except Exception as e:
             logger.error(f"Error generating roast: {str(e)}")
 
+    return bot
+
+
+def create_api_lifespan(bot: Client):
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         # Initialize bot on startup
@@ -102,7 +99,11 @@ def create_app():
         with suppress(asyncio.CancelledError):
             await bot_task
 
-    app = FastAPI(lifespan=lifespan)
+    return lifespan
+
+
+def create_api(bot: Client):
+    app = FastAPI(lifespan=create_api_lifespan(bot))
 
     @app.get("/healthz")
     async def liveness_probe():
@@ -121,3 +122,8 @@ def create_app():
         return JSONResponse(content={"status": "not live"}, status_code=503)
 
     return app
+
+
+def create_app():
+    apeiron.logging.init()
+    return create_api(create_bot())
