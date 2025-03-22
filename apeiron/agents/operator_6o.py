@@ -1,6 +1,8 @@
 import logging
 from collections.abc import Sequence
+from enum import Enum
 from pathlib import Path
+from typing import Annotated, Literal
 
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.tools.base import BaseTool
@@ -14,13 +16,43 @@ from apeiron.agents.utils import load_prompt
 logger = logging.getLogger(__name__)
 
 
-class Response(BaseModel):
-    """Response format for Operator 6O."""
+class ActionType(Enum):
+    """Type of action to take."""
 
-    status: str = Field(..., description="Status of the response: 'success' or 'error'")
-    reason: str | None = Field(
-        None, description="Reason for error if status is 'error'"
+    SEND = "send"
+    REPLY = "reply"
+
+
+class SendResponse(BaseModel):
+    """Response format for sending new messages."""
+
+    type: Literal["send"] = "send"
+    content: str = Field(
+        description="Content of the message to send",
     )
+
+
+class ReplyResponse(BaseModel):
+    """Response format for reply messages."""
+
+    type: Literal["reply"] = "reply"
+    content: str = Field(
+        description="Content of the reply message",
+    )
+    message_id: int = Field(
+        description="ID of the message to reply to",
+    )
+
+
+class NoopResponse(BaseModel):
+    """Response format for no operation needed."""
+
+    type: Literal["noop"] = "noop"
+
+
+Response = Annotated[
+    SendResponse | ReplyResponse | NoopResponse, Field(discriminator="type")
+]
 
 
 def create_agent(tools: Sequence[BaseTool], model: BaseChatModel, **kwargs):

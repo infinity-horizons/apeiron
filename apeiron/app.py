@@ -69,8 +69,27 @@ def create_app():
                     },
                 )
             response: Response = result["structured_response"]
-            if response.status == "error":
-                logger.warn(f"Error: {response.reason}")
+
+            match response.type:
+                case "send":
+                    await message.channel.send(content=response.content)
+                    logger.info(f"Sent message in {message.channel.name}")
+
+                case "reply":
+                    reply_to = await message.channel.fetch_message(response.message_id)
+                    await reply_to.reply(content=response.content)
+                    logger.info(
+                        "Replied to message %s in %s",
+                        response.message_id,
+                        message.channel.name,
+                    )
+
+                case "noop":
+                    logger.info("No action needed")
+
+                case _:
+                    logger.error(f"Unknown response type: {response.type}")
+
         except Exception as e:
             logger.error(f"Error generating roast: {str(e)}")
 
