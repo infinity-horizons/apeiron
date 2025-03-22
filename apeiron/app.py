@@ -6,6 +6,7 @@ from contextlib import asynccontextmanager, suppress
 from discord import AutoShardedBot, Intents, Message
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
+from langchain_core.runnables import RunnableConfig
 
 import apeiron.logging
 from apeiron.agents.operator_6o import Response, create_agent
@@ -53,15 +54,20 @@ def create_app():
             return
 
         try:
-            messages = [create_chat_message(message)]
+            config = RunnableConfig(
+                configurable= {
+                    "thread_id": create_thread_id(message),
+                    "message_id": message.id,
+                    "channel_id": message.channel.id,
+                    "author_id": message.author.id,
+                }
+            )
+            if message.guild:
+                config.configurable["guild_id"] = message.guild.id
             async with message.channel.typing():
                 result = await graph.ainvoke(
-                    {"messages": messages},
-                    config={
-                        "configurable": {
-                            "thread_id": create_thread_id(message),
-                        }
-                    },
+                    {"messages": [create_chat_message(message)]},
+                    config=config,
                 )
             response: Response = result["structured_response"]
 
