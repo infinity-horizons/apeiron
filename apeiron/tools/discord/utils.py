@@ -63,6 +63,16 @@ def create_thread_id(message: Message) -> str:
     )
 
 
+def create_configurable(message: Message) -> dict:
+    """Create a configurable object from a Discord message."""
+    return {
+        "thread_id": create_thread_id(message),
+        "message_id": message.id,
+        "channel_id": message.channel.id,
+        "user_id": message.author.id,
+    }
+
+
 def is_bot_message(client: Client, message: Message) -> bool:
     """Check if the message is from the bot itself."""
     return message.author == client.user
