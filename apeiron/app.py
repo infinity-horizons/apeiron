@@ -55,11 +55,11 @@ def create_app():
 
         try:
             config = RunnableConfig(
-                configurable= {
+                configurable={
                     "thread_id": create_thread_id(message),
                     "message_id": message.id,
                     "channel_id": message.channel.id,
-                    "author_id": message.author.id,
+                    "user_id": message.author.id,
                 }
             )
             if message.guild:

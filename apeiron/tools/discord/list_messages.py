@@ -1,4 +1,5 @@
 from discord.errors import Forbidden, NotFound
+from langchain_core.runnables import RunnableConfig
 from langchain_core.tools.base import ToolException
 from pydantic import BaseModel, Field
 
@@ -9,7 +10,9 @@ from apeiron.tools.discord.get_message import to_dict
 class ListMessagesSchema(BaseModel):
     """Arguments for listing Discord messages."""
 
-    channel_id: int = Field(description="The ID of the channel to read messages from")
+    channel_id: int | None = Field(
+        None, description="The ID of the channel to read messages from"
+    )
     before: str | None = Field(
         None, description="Optional message ID to read messages before"
     )
@@ -31,11 +34,12 @@ class DiscordListMessagesTool(BaseDiscordTool):
 
     async def _arun(
         self,
-        channel_id: int,
+        channel_id: int | None = None,
         before: str | None = None,
         after: str | None = None,
         around: str | None = None,
         limit: int = 100,
+        config: RunnableConfig | None = None,
     ) -> list[dict]:
         """Read messages from a Discord channel with optional filters.
 
@@ -44,6 +48,7 @@ class DiscordListMessagesTool(BaseDiscordTool):
             before: Optional message ID to read messages before.
             after: Optional message ID to read messages after.
             limit: Number of messages to retrieve (max 100).
+            config: Optional RunnableConfig object.
 
         Returns:
             List containing message objects with metadata and content.
@@ -51,6 +56,8 @@ class DiscordListMessagesTool(BaseDiscordTool):
         Raises:
             ToolException: If the messages fail to read.
         """
+        if channel_id is None and config:
+            channel_id = config.configurable.get("channel_id")
         try:
             channel = await self.client.fetch_channel(channel_id)
             kwargs = {"limit": limit}

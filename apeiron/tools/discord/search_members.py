@@ -1,3 +1,4 @@
+from langchain_core.runnables import RunnableConfig
 from pydantic import BaseModel, Field
 
 from apeiron.tools.discord.base import BaseDiscordTool
@@ -7,10 +8,11 @@ from apeiron.tools.discord.list_members import to_dict
 class SearchMembersInput(BaseModel):
     """Arguments for searching Discord guild members."""
 
-    guild_id: str = Field(description="Discord guild (server) ID to search members in")
-    query: str | None = Field(
-        None,
+    query: str = Field(
         description="Optional search query to filter members by (case-insensitive)",
+    )
+    guild_id: int | None = Field(
+        None, description="Discord guild (server) ID to search members in"
     )
     limit: int = Field(1000, description="Number of members to retrieve (max 100)")
 
@@ -24,20 +26,24 @@ class DiscordSearchMembersTool(BaseDiscordTool):
 
     async def _arun(
         self,
-        guild_id: str,
-        query: str | None = None,
+        query: str,
+        guild_id: int | None = None,
         limit: int = 1000,
+        config: RunnableConfig | None = None,
     ) -> list[dict]:
         """Search members in a guild with filters.
 
         Args:
-            guild_id: The ID of the guild to search members in.
             query: Optional search query to filter members by (case-insensitive).
+            guild_id: The ID of the guild to search members in.
             limit: Number of members to retrieve (max 100).
+            config: Optional runnable config object.
 
         Returns:
             List of member dictionaries matching the search criteria.
         """
-        guild = await self.client.fetch_guild(int(guild_id))
+        if guild_id is None and config:
+            guild_id = config.configurable.get("guild_id")
+        guild = await self.client.fetch_guild(guild_id)
         members = await guild.search_members(query=query, limit=limit)
         return [to_dict(member) for member in members]

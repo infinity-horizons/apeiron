@@ -1,4 +1,5 @@
 from discord import Guild, Role
+from langchain_core.runnables import RunnableConfig
 from pydantic import BaseModel, Field
 
 from apeiron.tools.discord.base import BaseDiscordTool
@@ -39,7 +40,9 @@ def to_dict(guild: Guild) -> dict:
 class GetGuildInput(BaseModel):
     """Arguments for retrieving Discord guild information."""
 
-    guild_id: str = Field(description="Discord guild (server) ID to look up")
+    guild_id: str | None = Field(
+        None, description="Discord guild (server) ID to look up"
+    )
 
 
 class DiscordGetGuildTool(BaseDiscordTool):
@@ -49,14 +52,19 @@ class DiscordGetGuildTool(BaseDiscordTool):
     description: str = "Get information about a Discord guild (server)"
     args_schema: type[GetGuildInput] = GetGuildInput
 
-    async def _arun(self, guild_id: str) -> dict:
+    async def _arun(
+        self, guild_id: str | None = None, config: RunnableConfig | None = None
+    ) -> dict:
         """Get guild information.
 
         Args:
             guild_id: The ID of the guild to retrieve information for.
+            config: Optional RunnableConfig object.
 
         Returns:
             Dictionary representation of the guild.
         """
+        if guild_id is None and config:
+            guild_id = config.configurable.get("guild_id")
         guild = await self.client.fetch_guild(int(guild_id))
         return to_dict(guild)

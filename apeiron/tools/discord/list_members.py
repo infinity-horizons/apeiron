@@ -1,4 +1,5 @@
 from discord import Member
+from langchain_core.runnables import RunnableConfig
 from pydantic import BaseModel, Field
 
 from apeiron.tools.discord.base import BaseDiscordTool
@@ -23,7 +24,9 @@ def to_dict(member: Member) -> dict:
 class ListMembersInput(BaseModel):
     """Arguments for listing Discord guild members."""
 
-    guild_id: str = Field(description="Discord guild (server) ID to list members from")
+    guild_id: str | None = Field(
+        None, description="Discord guild (server) ID to list members from"
+    )
     before: str | None = Field(
         None, description="Optional member ID to list members before"
     )
@@ -42,10 +45,11 @@ class DiscordListMembersTool(BaseDiscordTool):
 
     async def _arun(
         self,
-        guild_id: str,
+        guild_id: str | None = None,
         before: str | None = None,
         after: str | None = None,
         limit: int = 100,
+        config: RunnableConfig | None = None,
     ) -> list[dict]:
         """List members in a guild with optional filters.
 
@@ -54,10 +58,13 @@ class DiscordListMembersTool(BaseDiscordTool):
             before: Optional member ID to list members before.
             after: Optional member ID to list members after.
             limit: Number of members to retrieve (max 100).
+            config: Optional RunnableConfig object.
 
         Returns:
             List of member dictionaries.
         """
+        if not guild_id and config:
+            guild_id = config.configurable.get("guild_id")
         guild = await self.client.fetch_guild(int(guild_id))
         kwargs = {"limit": limit}
         if before:
