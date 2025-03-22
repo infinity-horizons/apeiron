@@ -1,5 +1,4 @@
 from discord.errors import Forbidden, NotFound
-from langchain_core.messages import ChatMessage
 from langchain_core.tools.base import ToolException
 from pydantic import BaseModel, Field
 

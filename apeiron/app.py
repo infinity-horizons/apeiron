@@ -8,7 +8,7 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
 import apeiron.logging
-from apeiron.agents.operator_6o import create_agent
+from apeiron.agents.operator_6o import create_agent, Response
 from apeiron.chat_models import create_chat_model
 from apeiron.toolkits.discord.toolkit import DiscordToolkit
 from apeiron.tools.discord.utils import (
@@ -60,7 +60,7 @@ def create_app():
         try:
             messages = [create_chat_message(message)]
             async with message.channel.typing():
-                _result = await graph.ainvoke(
+                result = await graph.ainvoke(
                     {"messages": messages},
                     config={
                         "configurable": {
@@ -68,6 +68,9 @@ def create_app():
                         }
                     },
                 )
+            response: Response = result["structured_response"]
+            if response.status == "error":
+                logger.warn(f"Error: {response.reason}")
         except Exception as e:
             logger.error(f"Error generating roast: {str(e)}")
 

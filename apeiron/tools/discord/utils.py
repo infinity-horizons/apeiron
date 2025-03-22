@@ -24,7 +24,11 @@ def create_chat_message(message: Message) -> AIMessage | HumanMessage:
     else:
         content = json.dumps(event_data)
 
-    return AIMessage(content=content) if message.author.bot else HumanMessage(content=content)
+    return (
+        AIMessage(content=content)
+        if message.author.bot
+        else HumanMessage(content=content)
+    )
 
 
 def create_thread_id(message: Message) -> str:
