@@ -12,6 +12,10 @@ class DiscordListGuildsTool(BaseDiscordTool):
     args_schema: type[BaseModel] = BaseModel
 
     async def _arun(self) -> list[dict]:
-        """List all guilds."""
+        """List all guilds.
+
+        Returns:
+            List of guild dictionaries.
+        """
         guilds = await self.client.fetch_guilds().flatten()
         return [to_dict(guild) for guild in guilds]

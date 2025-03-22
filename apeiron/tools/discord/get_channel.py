@@ -8,6 +8,8 @@ from apeiron.tools.discord.list_channels import to_dict
 
 
 class DiscordGetChannelInput(BaseModel):
+    """Arguments for retrieving a specific Discord channel."""
+
     channel_id: int = Field(description="The ID of the channel to retrieve")
 
 
@@ -18,15 +20,18 @@ class DiscordGetChannelTool(BaseDiscordTool):
     description: str = "Get a specific channel from Discord"
     args_schema: type[DiscordGetChannelInput] = DiscordGetChannelInput
 
-    def _run(self, channel_id: int) -> dict:
-        """Get channel information synchronously."""
-        channel = self.client.get_channel(channel_id)
-        if not isinstance(channel, TextChannel):
-            raise ToolException(f"Channel {channel_id} not found or not a text channel")
-        return to_dict(channel)
-
     async def _arun(self, channel_id: int) -> dict:
-        """Get channel information."""
+        """Get channel information.
+
+        Args:
+            channel_id: The ID of the channel to retrieve.
+
+        Returns:
+            The channel information.
+
+        Raises:
+            ToolException: If the channel is not found or not a text channel.
+        """
         try:
             channel = await self.client.fetch_channel(channel_id)
             if not isinstance(channel, TextChannel):

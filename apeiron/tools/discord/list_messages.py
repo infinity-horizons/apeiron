@@ -20,6 +20,8 @@ class ListMessagesSchema(BaseModel):
 
 
 class DiscordListMessagesTool(BaseDiscordTool):
+    """Tool for reading messages from a Discord channel with optional filters."""
+
     name: str = "list_messages"
     description: str = "Read messages from a Discord channel with optional filters"
     args_schema: type[ListMessagesSchema] = ListMessagesSchema
@@ -31,6 +33,20 @@ class DiscordListMessagesTool(BaseDiscordTool):
         after: str | None = None,
         limit: int = 100,
     ) -> list[dict]:
+        """Read messages from a Discord channel with optional filters.
+
+        Args:
+            channel_id: ID of the channel to read messages from.
+            before: Optional message ID to read messages before.
+            after: Optional message ID to read messages after.
+            limit: Number of messages to retrieve (max 100).
+
+        Returns:
+            List containing message objects with metadata and content.
+
+        Raises:
+            ToolException: If the messages fail to read.
+        """
         try:
             channel = await self.client.fetch_channel(channel_id)
             kwargs = {"limit": limit}

@@ -5,6 +5,8 @@ from apeiron.tools.discord.base import BaseDiscordTool
 
 
 class DiscordGetGuildInput(BaseModel):
+    """Arguments for retrieving Discord guild information."""
+
     guild_id: str = Field(description="Discord guild (server) ID to look up")
 
 
@@ -32,6 +34,13 @@ class DiscordGetGuildTool(BaseDiscordTool):
     args_schema: type[DiscordGetGuildInput] = DiscordGetGuildInput
 
     async def _arun(self, guild_id: str) -> dict:
-        """Get guild information."""
+        """Get guild information.
+
+        Args:
+            guild_id: The ID of the guild to retrieve information for.
+
+        Returns:
+            Dictionary representation of the guild.
+        """
         guild = await self.client.fetch_guild(int(guild_id))
         return to_dict(guild)

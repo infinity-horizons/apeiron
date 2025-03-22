@@ -29,12 +29,15 @@ class DiscordAddReactionTool(BaseDiscordTool):
         """Add a reaction to a message in a Discord channel.
 
         Args:
-            emoji: The emoji to react with
-            message_id: ID of the message to add reaction to
-            channel_id: ID of the channel containing the message
+            emoji: The emoji to react with.
+            message_id: ID of the message to add reaction to.
+            channel_id: ID of the channel containing the message.
 
         Returns:
-            str: Confirmation message
+            Confirmation message.
+
+        Raises:
+            ToolException: If the reaction addition fails.
         """
         try:
             channel = await self.client.fetch_channel(channel_id)

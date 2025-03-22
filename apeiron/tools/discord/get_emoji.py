@@ -22,6 +22,8 @@ def to_dict(emoji: Emoji) -> dict:
 
 
 class DiscordGetEmojiInput(BaseModel):
+    """Arguments for retrieving a specific Discord emoji."""
+
     guild_id: int = Field(description="The ID of the guild containing the emoji")
     emoji_id: int = Field(description="The ID of the emoji to retrieve")
 
@@ -34,7 +36,15 @@ class DiscordGetEmojiTool(BaseDiscordTool):
     args_schema: type[DiscordGetEmojiInput] = DiscordGetEmojiInput
 
     async def _arun(self, guild_id: int, emoji_id: int) -> dict:
-        """Get a specific emoji."""
+        """Get a specific emoji.
+
+        Args:
+            guild_id: The ID of the guild containing the emoji.
+            emoji_id: The ID of the emoji to retrieve.
+
+        Returns:
+            Dictionary representation of the emoji.
+        """
         try:
             guild = await self.client.fetch_guild(guild_id)
             emoji = await guild.fetch_emoji(emoji_id)

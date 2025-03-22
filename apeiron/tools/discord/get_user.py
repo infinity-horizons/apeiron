@@ -30,6 +30,13 @@ class DiscordGetUserTool(BaseDiscordTool):
     args_schema: type[DiscordGetUserInput] = DiscordGetUserInput
 
     async def _arun(self, user_id: int) -> dict:
-        """Get user profile information."""
+        """Get user profile information.
+
+        Args:
+            The ID of the user to retrieve information for.
+
+        Returns:
+            Dictionary containing user information.
+        """
         user = await self.client.fetch_user(user_id)
         return to_dict(user)

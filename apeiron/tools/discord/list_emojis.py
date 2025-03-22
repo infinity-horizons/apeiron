@@ -20,6 +20,17 @@ class DiscordListEmojisTool(BaseDiscordTool):
     args_schema: type[ListEmojisSchema] = ListEmojisSchema
 
     async def _arun(self, guild_id: int) -> list[dict]:
+        """List all emojis in a Discord guild.
+
+        Args:
+            guild_id: The ID of the guild to list emojis from.
+
+        Returns:
+            A list of dictionaries containing emoji information.
+
+        Raises:
+            ToolException: If the emojis cannot be listed.
+        """
         try:
             guild = await self.client.fetch_guild(guild_id)
             emojis = await guild.fetch_emojis()

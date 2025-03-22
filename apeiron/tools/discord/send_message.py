@@ -33,6 +33,21 @@ class DiscordSendMessageTool(BaseDiscordTool):
         files: list[str] | None = None,
         reference: int | None = None,
     ) -> str:
+        """Send a message to a Discord channel.
+        Args:
+            channel_id: The ID of the channel to send the message to.
+            content: The content of the message to send.
+            tts: Whether to send as text-to-speech message.
+            embeds: List of embed dictionaries.
+            files: List of file paths to send.
+            reference: Message ID to reply to.
+
+        Returns:
+            The ID of the sent message.
+
+        Raises:
+            ToolException: If the message fails to send.
+        """
         try:
             channel = await self.client.fetch_channel(channel_id)
             if not channel:

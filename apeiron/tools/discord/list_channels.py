@@ -20,6 +20,8 @@ def to_dict(channel: TextChannel) -> dict:
 
 
 class DiscordListChannelsInput(BaseModel):
+    """Input for the DiscordListChannelsTool."""
+
     guild_id: int = Field(description="Discord guild (server) ID to list channels from")
 
 
@@ -31,7 +33,14 @@ class DiscordListChannelsTool(BaseDiscordTool):
     args_schema: type[DiscordListChannelsInput] = DiscordListChannelsInput
 
     async def _arun(self, guild_id: int) -> list[dict]:
-        """List channels in a guild."""
+        """List channels in a guild.
+
+        Args:
+            ID of the guild to list channels from.
+
+        Returns:
+            List of channel dictionaries.
+        """
         guild = await self.client.fetch_guild(guild_id)
         channels = await guild.fetch_channels()
         return [to_dict(channel) for channel in channels]
