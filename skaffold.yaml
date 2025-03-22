@@ -10,4 +10,13 @@ build:
 manifests:
   kustomize:
     paths:
-      - manifests/clusters/nishir/base
+      - manifests/clusters/nishir/overlays/default
+profiles:
+  - name: development
+    activation:
+      - kubeContext: minikube
+      - command: dev
+    manifests:
+      kustomize:
+        paths:
+          - manifests/clusters/nishir/overlays/development
