@@ -13,6 +13,7 @@ from apeiron.tools.discord.list_emojis import DiscordListEmojisTool
 from apeiron.tools.discord.list_members import DiscordListMembersTool
 from apeiron.tools.discord.list_messages import DiscordListMessagesTool
 from apeiron.tools.discord.reply_message import DiscordReplyMessageTool
+from apeiron.tools.discord.search_members import DiscordSearchMembersTool
 from apeiron.tools.discord.send_message import DiscordSendMessageTool
 
 
@@ -39,5 +40,6 @@ class DiscordToolkit(BaseToolkit):
             DiscordListMembersTool(client=self.client),
             DiscordListMessagesTool(client=self.client),
             DiscordReplyMessageTool(client=self.client),
+            DiscordSearchMembersTool(client=self.client),
             DiscordSendMessageTool(client=self.client),
         ]

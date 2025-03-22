@@ -24,6 +24,13 @@ class ListMembersInput(BaseModel):
     """Arguments for listing Discord guild members."""
 
     guild_id: str = Field(description="Discord guild (server) ID to list members from")
+    before: str | None = Field(
+        None, description="Optional member ID to list members before"
+    )
+    after: str | None = Field(
+        None, description="Optional member ID to list members after"
+    )
+    limit: int = Field(100, description="Number of members to retrieve (max 100)")
 
 
 class DiscordListMembersTool(BaseDiscordTool):
@@ -33,15 +40,30 @@ class DiscordListMembersTool(BaseDiscordTool):
     description: str = "List all members in a Discord guild (server)"
     args_schema: type[ListMembersInput] = ListMembersInput
 
-    async def _arun(self, guild_id: str) -> list[dict]:
-        """List members in a guild.
+    async def _arun(
+        self,
+        guild_id: str,
+        before: str | None = None,
+        after: str | None = None,
+        limit: int = 100,
+    ) -> list[dict]:
+        """List members in a guild with optional filters.
 
         Args:
             guild_id: The ID of the guild to list members from.
+            before: Optional member ID to list members before.
+            after: Optional member ID to list members after.
+            limit: Number of members to retrieve (max 100).
 
         Returns:
             List of member dictionaries.
         """
         guild = await self.client.fetch_guild(int(guild_id))
-        members = await guild.fetch_members().flatten()
+        kwargs = {"limit": limit}
+        if before:
+            kwargs["before"] = before
+        if after:
+            kwargs["after"] = after
+
+        members = await guild.fetch_members(**kwargs).flatten()
         return [to_dict(member) for member in members]
