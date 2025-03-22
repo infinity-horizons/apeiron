@@ -1,4 +1,5 @@
 from discord.errors import Forbidden, NotFound
+from langchain_core.runnables import RunnableConfig
 from langchain_core.tools.base import ToolException
 from pydantic import BaseModel, Field
 
@@ -9,8 +10,12 @@ class AddReactionSchema(BaseModel):
     """Arguments for adding reactions to Discord messages."""
 
     emoji: str = Field(description="The emoji to react with")
-    message_id: int = Field(description="ID of the message to add reaction to")
-    channel_id: int = Field(description="ID of the channel containing the message")
+    message_id: int | None = Field(
+        None, description="ID of the message to add reaction to"
+    )
+    channel_id: int | None = Field(
+        None, description="ID of the channel containing the message"
+    )
 
 
 class DiscordAddReactionTool(BaseDiscordTool):
@@ -23,8 +28,9 @@ class DiscordAddReactionTool(BaseDiscordTool):
     async def _arun(
         self,
         emoji: str,
-        message_id: int,
-        channel_id: int,
+        message_id: int | None = None,
+        channel_id: int | None = None,
+        config: RunnableConfig | None = None,
     ) -> str:
         """Add a reaction to a message in a Discord channel.
 
@@ -32,6 +38,7 @@ class DiscordAddReactionTool(BaseDiscordTool):
             emoji: The emoji to react with.
             message_id: ID of the message to add reaction to.
             channel_id: ID of the channel containing the message.
+            config: Optional RunnableConfig object.
 
         Returns:
             Confirmation message.
@@ -39,6 +46,10 @@ class DiscordAddReactionTool(BaseDiscordTool):
         Raises:
             ToolException: If the reaction addition fails.
         """
+        if message_id is None and config:
+            message_id = config.configurable.get("message_id")
+        if channel_id is None and config:
+            channel_id = config.configurable.get("channel_id")
         try:
             channel = await self.client.fetch_channel(channel_id)
             message = await channel.fetch_message(message_id)

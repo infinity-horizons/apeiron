@@ -1,5 +1,6 @@
 from discord import Emoji
 from discord.errors import Forbidden, NotFound
+from langchain_core.runnables import RunnableConfig
 from langchain_core.tools.base import ToolException
 from pydantic import BaseModel, Field
 
@@ -24,8 +25,10 @@ def to_dict(emoji: Emoji) -> dict:
 class GetEmojiInput(BaseModel):
     """Arguments for retrieving a specific Discord emoji."""
 
-    guild_id: int = Field(description="The ID of the guild containing the emoji")
     emoji_id: int = Field(description="The ID of the emoji to retrieve")
+    guild_id: int | None = Field(
+        None, description="The ID of the guild containing the emoji"
+    )
 
 
 class DiscordGetEmojiTool(BaseDiscordTool):
@@ -35,16 +38,21 @@ class DiscordGetEmojiTool(BaseDiscordTool):
     description: str = "Get a specific emoji from a Discord guild"
     args_schema: type[GetEmojiInput] = GetEmojiInput
 
-    async def _arun(self, guild_id: int, emoji_id: int) -> dict:
+    async def _arun(
+        self, emoji_id: int, guild_id: int, config: RunnableConfig | None = None
+    ) -> dict:
         """Get a specific emoji.
 
         Args:
             guild_id: The ID of the guild containing the emoji.
             emoji_id: The ID of the emoji to retrieve.
+            config: Optional RunnableConfig object.
 
         Returns:
             Dictionary representation of the emoji.
         """
+        if guild_id is None and config:
+            guild_id = config.configurable.get("guild_id")
         try:
             guild = await self.client.fetch_guild(guild_id)
             emoji = await guild.fetch_emoji(emoji_id)

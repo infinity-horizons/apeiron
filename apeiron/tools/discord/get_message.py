@@ -1,12 +1,13 @@
 from discord import Message
-from discord.errors import Forbidden, NotFound
+from discord.errors import Forbidden
+from langchain_core.runnables import RunnableConfig
 from langchain_core.tools.base import ToolException
 from pydantic import BaseModel, Field
 
 from apeiron.tools.discord.base import BaseDiscordTool
 
 
-def attachment_to_dict(attachment) -> dict:
+def attachment_to_dict(attachment: Attachment) -> dict:
     """Convert attachment to dictionary representation."""
     attachment_info = {
         "filename": attachment.filename,
@@ -27,7 +28,7 @@ def attachment_to_dict(attachment) -> dict:
     return attachment_info
 
 
-def author_to_dict(author) -> dict:
+def author_to_dict(author: User) -> dict:
     """Convert author to dictionary representation."""
     return {
         "id": str(author.id),
@@ -38,7 +39,7 @@ def author_to_dict(author) -> dict:
     }
 
 
-def reference_to_dict(reference) -> dict:
+def reference_to_dict(reference: MessageReference) -> dict:
     """Convert message reference to dictionary representation."""
     ref = reference.resolved
     return {
@@ -73,8 +74,12 @@ def to_dict(message: Message) -> dict:
 class GetMessageInput(BaseModel):
     """Arguments for retrieving a specific Discord message."""
 
-    channel_id: int = Field(description="The ID of the channel containing the message")
-    message_id: int = Field(description="The ID of the message to retrieve")
+    channel_id: int | None = Field(
+        None, description="The ID of the channel containing the message"
+    )
+    message_id: int | None = Field(
+        None, description="The ID of the message to retrieve"
+    )
 
 
 class DiscordGetMessageTool(BaseDiscordTool):
@@ -84,12 +89,18 @@ class DiscordGetMessageTool(BaseDiscordTool):
     description: str = "Get a specific message from a Discord channel"
     args_schema: type[GetMessageInput] = GetMessageInput
 
-    async def _arun(self, channel_id: int, message_id: int) -> dict:
+    async def _arun(
+        self,
+        channel_id: int | None = None,
+        message_id: int | None = None,
+        config: RunnableConfig | None = None,
+    ) -> dict:
         """Get a specific message.
 
         Args:
             channel_id: The ID of the channel containing the message.
             message_id: The ID of the message to retrieve.
+            config: Optional runnable configuration.
 
         Returns:
             Message data dictionary.
@@ -97,6 +108,10 @@ class DiscordGetMessageTool(BaseDiscordTool):
         Raises:
             ToolException: If there is an issue retrieving the message.
         """
+        if not channel_id and config:
+            channel_id = config.configurable.get("channel_id")
+        if not message_id and config:
+            message_id = config.configurable.get("message_id")
         try:
             channel = await self.client.fetch_channel(channel_id)
             message = await channel.fetch_message(message_id)

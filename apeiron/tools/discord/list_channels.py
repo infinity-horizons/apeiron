@@ -1,4 +1,5 @@
 from discord import TextChannel
+from langchain_core.runnables import RunnableConfig
 from pydantic import BaseModel, Field
 
 from apeiron.tools.discord.base import BaseDiscordTool
@@ -22,7 +23,9 @@ def to_dict(channel: TextChannel) -> dict:
 class ListChannelsInput(BaseModel):
     """Input for the DiscordListChannelsTool."""
 
-    guild_id: int = Field(description="Discord guild (server) ID to list channels from")
+    guild_id: int | None = Field(
+        None, description="Discord guild (server) ID to list channels from"
+    )
 
 
 class DiscordListChannelsTool(BaseDiscordTool):
@@ -32,15 +35,20 @@ class DiscordListChannelsTool(BaseDiscordTool):
     description: str = "List all channels in a Discord guild (server)"
     args_schema: type[ListChannelsInput] = ListChannelsInput
 
-    async def _arun(self, guild_id: int) -> list[dict]:
+    async def _arun(
+        self, guild_id: int | None = None, config: RunnableConfig | None = None
+    ) -> list[dict]:
         """List channels in a guild.
 
         Args:
-            ID of the guild to list channels from.
+            guild_id: ID of the guild to list channels from.
+            config: Optional runnable config.
 
         Returns:
             List of channel dictionaries.
         """
+        if guild_id is None and config:
+            guild_id = config.configurable.get("guild_id")
         guild = await self.client.fetch_guild(guild_id)
         channels = await guild.fetch_channels()
         return [to_dict(channel) for channel in channels]

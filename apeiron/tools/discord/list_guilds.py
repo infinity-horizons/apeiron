@@ -35,6 +35,7 @@ class DiscordListGuildsTool(BaseDiscordTool):
             before: Optional guild ID to list guilds before.
             after: Optional guild ID to list guilds after.
             limit: Number of guilds to retrieve (max 100).
+            config: Optional RunnableConfig object.
 
         Returns:
             List of guild dictionaries.

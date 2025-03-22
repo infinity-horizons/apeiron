@@ -1,5 +1,6 @@
 from discord import Embed, File, MessageReference
 from discord.errors import Forbidden, NotFound
+from langchain_core.runnables import RunnableConfig
 from langchain_core.tools.base import ToolException
 from pydantic import BaseModel, Field
 
@@ -10,7 +11,9 @@ class SendMessageSchema(BaseModel):
     """Arguments for sending Discord messages."""
 
     content: str | None = Field(None, description="The content of the message to send")
-    channel_id: int = Field(description="ID of the channel to send the message to")
+    channel_id: int | None = Field(
+        None, description="ID of the channel to send the message to"
+    )
     tts: bool = Field(False, description="Whether to send as text-to-speech message")
     embeds: list[dict] | None = Field(None, description="List of embed dictionaries")
     files: list[str] | None = Field(None, description="List of file paths to send")
@@ -26,21 +29,23 @@ class DiscordSendMessageTool(BaseDiscordTool):
 
     async def _arun(
         self,
-        channel_id: int,
         content: str | None = None,
+        channel_id: int | None = None,
         tts: bool = False,
         embeds: list[dict] | None = None,
         files: list[str] | None = None,
         reference: int | None = None,
+        config: RunnableConfig | None = None,
     ) -> str:
         """Send a message to a Discord channel.
         Args:
-            channel_id: The ID of the channel to send the message to.
             content: The content of the message to send.
+            channel_id: The ID of the channel to send the message to.
             tts: Whether to send as text-to-speech message.
             embeds: List of embed dictionaries.
             files: List of file paths to send.
             reference: Message ID to reply to.
+            config: The runnable configuration.
 
         Returns:
             The ID of the sent message.
@@ -48,6 +53,8 @@ class DiscordSendMessageTool(BaseDiscordTool):
         Raises:
             ToolException: If the message fails to send.
         """
+        if not channel_id and config:
+            channel_id = config.configurable.get("channel_id")
         try:
             channel = await self.client.fetch_channel(channel_id)
             if not channel:
