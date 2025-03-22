@@ -22,6 +22,34 @@ spec:
             - server
             - --host=0.0.0.0
             - --port=5000
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: mlflow
+                  key: access_key_id
+            - name: AWS_DEFAULT_REGION
+              valueFrom:
+                secretKeyRef:
+                  name: mlflow
+                  key: region
+            - name: AWS_S3_SIGNATURE_VERSION
+              value: s3v4
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: mlflow
+                  key: secret_access_key
+            - name: MLFLOW_ARTIFACTS_DESTINATION
+              valueFrom:
+                configMapKeyRef:
+                  name: mlflow
+                  key: artifacts_destination
+            - name: MLFLOW_S3_ENDPOINT_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: mlflow
+                  key: s3_endpoint_url
           ports:
             - containerPort: 5000
               name: http
