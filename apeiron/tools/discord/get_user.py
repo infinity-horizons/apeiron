@@ -1,7 +1,7 @@
 from discord import User
 from pydantic import BaseModel, Field
 
-from apeiron.tools.discord.base import DiscordBaseTool
+from apeiron.tools.discord.base import BaseDiscordTool
 
 
 def to_dict(user: User) -> dict:
@@ -22,7 +22,7 @@ class DiscordGetUserInput(BaseModel):
     user_id: int = Field(description="Discord user ID to look up")
 
 
-class DiscordGetUserTool(DiscordBaseTool):
+class DiscordGetUserTool(BaseDiscordTool):
     """Tool for retrieving Discord user profile information."""
 
     name: str = "user_profile"
