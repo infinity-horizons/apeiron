@@ -14,7 +14,7 @@ from apeiron.chat_models import create_chat_model
 from apeiron.toolkits.discord.toolkit import DiscordToolkit
 from apeiron.tools.discord.utils import (
     create_chat_message,
-    create_thread_id,
+    create_configurable,
     is_bot_mentioned,
     is_bot_message,
     is_private_channel,
@@ -48,12 +48,7 @@ def create_bot():
 
         try:
             config = RunnableConfig(
-                configurable={
-                    "thread_id": create_thread_id(message),
-                    "message_id": message.id,
-                    "channel_id": message.channel.id,
-                    "user_id": message.author.id,
-                }
+                configurable=create_configurable(message),
             )
             if message.guild:
                 config.configurable["guild_id"] = message.guild.id
