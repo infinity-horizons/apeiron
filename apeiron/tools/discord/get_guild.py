@@ -1,6 +1,7 @@
-from discord import Client, Guild
-from langchain.tools import BaseTool
+from discord import Guild
 from pydantic import BaseModel, Field
+
+from apeiron.tools.discord.base import BaseDiscordTool
 
 
 class DiscordGetGuildInput(BaseModel):
@@ -23,16 +24,12 @@ def to_dict(guild: Guild) -> dict:
     }
 
 
-class DiscordGetGuildTool(BaseTool):
+class DiscordGetGuildTool(BaseDiscordTool):
     """Tool for retrieving Discord guild information."""
 
     name: str = "get_guild"
     description: str = "Get information about a Discord guild (server)"
     args_schema: type[DiscordGetGuildInput] = DiscordGetGuildInput
-
-    def __init__(self, client: Client):
-        super().__init__()
-        self.client = client
 
     async def _arun(self, guild_id: str) -> dict:
         """Get guild information."""

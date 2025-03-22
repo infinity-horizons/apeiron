@@ -1,6 +1,7 @@
-from discord import Client, TextChannel
-from langchain.tools import BaseTool
+from discord import TextChannel
 from pydantic import BaseModel, Field
+
+from apeiron.tools.discord.get_guild import DiscordGetGuildTool
 
 
 def to_dict(channel: TextChannel) -> dict:
@@ -22,16 +23,12 @@ class DiscordListChannelsInput(BaseModel):
     guild_id: int = Field(description="Discord guild (server) ID to list channels from")
 
 
-class DiscordListChannelsTool(BaseTool):
+class DiscordListChannelsTool(DiscordGetGuildTool):
     """Tool for listing Discord channels in a guild."""
 
     name: str = "list_channels"
     description: str = "List all channels in a Discord guild (server)"
     args_schema: type[DiscordListChannelsInput] = DiscordListChannelsInput
-
-    def __init__(self, client: Client):
-        super().__init__()
-        self.client = client
 
     async def _arun(self, guild_id: int) -> list[dict]:
         """List channels in a guild."""

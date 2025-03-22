@@ -1,6 +1,7 @@
-from discord import Client, User
-from langchain.tools import BaseTool
+from discord import User
 from pydantic import BaseModel, Field
+
+from apeiron.tools.discord.get_guild import DiscordGetGuildTool
 
 
 def to_dict(user: User) -> dict:
@@ -21,18 +22,14 @@ class DiscordGetUserInput(BaseModel):
     user_id: int = Field(description="Discord user ID to look up")
 
 
-class DiscordGetUserTool(BaseTool):
+class DiscordGetUserTool(DiscordGetGuildTool):
     """Tool for retrieving Discord user profile information."""
 
     name: str = "user_profile"
     description: str = "Get information about a Discord user's profile"
     args_schema: type[DiscordGetUserInput] = DiscordGetUserInput
 
-    def __init__(self, client: Client):
-        super().__init__()
-        self.client = client
-
     async def _arun(self, user_id: int) -> dict:
-            """Get user profile information."""
-            user = await self.client.fetch_user(user_id)
-            return to_dict(user)
+        """Get user profile information."""
+        user = await self.client.fetch_user(user_id)
+        return to_dict(user)
