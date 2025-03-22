@@ -3,6 +3,7 @@ from langchain_core.tools.base import ToolException
 from pydantic import BaseModel, Field
 
 from apeiron.tools.discord.base import BaseDiscordTool
+from apeiron.tools.discord.get_message import to_dict
 
 
 class ListMessagesSchema(BaseModel):
@@ -35,35 +36,28 @@ class DiscordListMessagesTool(BaseDiscordTool):
         """Read messages from a Discord channel with optional filters.
 
         Args:
-            channel_id: ID of the channel to read messages from
-            before: Optional message ID to read messages before
-            after: Optional message ID to read messages after
-            limit: Number of messages to retrieve (max 100)
+            channel_id: ID of the channel to read messages from.
+            before: Optional message ID to read messages before.
+            after: Optional message ID to read messages after.
+            limit: Number of messages to retrieve (max 100).
 
         Returns:
-            list[dict]: List containing message objects with metadata and content
+            List containing message objects with metadata and content.
+
+        Raises:
+            ToolException: If the messages fail to read.
         """
         try:
             channel = await self.client.fetch_channel(channel_id)
-            messages = []
             kwargs = {"limit": limit}
             if before:
                 kwargs["before"] = before
             if after:
                 kwargs["after"] = after
+
+            messages = []
             async for message in channel.history(**kwargs):
-                ref_id = None
-                if message.reference:
-                    ref_id = str(message.reference.message_id)
-                messages.append(
-                    {
-                        "id": str(message.id),
-                        "content": message.content,
-                        "author": str(message.author),
-                        "timestamp": str(message.created_at),
-                        "reference": ref_id,
-                    }
-                )
+                messages.append(to_dict(message))
             return messages
         except (Forbidden, NotFound) as e:
             raise ToolException(f"Failed to read messages: {str(e)}") from e
