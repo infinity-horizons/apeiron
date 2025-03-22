@@ -1,15 +1,36 @@
 import json
 
-from discord import Client, Message
+from discord import Client, Guild, Message
 from langchain_core.messages import AIMessage, HumanMessage
 
-from apeiron.tools.discord.get_message import to_dict
+from apeiron.tools.discord.get_guild import to_dict as guild_to_dict
+from apeiron.tools.discord.get_message import to_dict as message_to_dict
 
 
-def create_chat_message(message: Message) -> AIMessage | HumanMessage:
+def create_guild_joined_chat_message(guild: Guild) -> AIMessage:
+    """Create a guild joined event."""
+    guild_payload = guild_to_dict(guild)
+    event_data = {"type": "guild_joined", "payload": guild_payload}
+    return HumanMessage(content=json.dumps(event_data))
+
+
+def create_thread_id_from_guild(guild: Guild) -> str:
+    """Create a thread ID from a Discord guild."""
+    return "/".join(["guild", str(guild.id)])
+
+
+def create_configurable_from_guild(guild: Guild) -> dict:
+    """Create a configurable object from a Discord guild."""
+    return {
+        "thread_id": create_thread_id_from_guild(guild),
+        "guild_id": guild.id,
+    }
+
+
+def create_message_received_chat_message(message: Message) -> AIMessage | HumanMessage:
     """Create a message event as AIMessage or HumanMessage."""
-    message_payload = to_dict(message)
-    event_data = {"type": "on_message_event", "payload": message_payload}
+    message_payload = message_to_dict(message)
+    event_data = {"type": "message_received", "payload": message_payload}
     content = []
     for attachment in message.attachments:
         if attachment.content_type and attachment.content_type.startswith("image/"):
@@ -31,42 +52,19 @@ def create_chat_message(message: Message) -> AIMessage | HumanMessage:
     )
 
 
-def create_thread_id(message: Message) -> str:
+def create_thread_id_from_message(message: Message) -> str:
     """Create a thread ID from a Discord message."""
-    if message.guild is None:
-        return "/".join(
-            [
-                "guild",
-                "__private__",
-                "channel",
-                str(message.author.id),
-            ]
-        )
-    if message.thread is None:
-        return "/".join(
-            [
-                "guild",
-                str(message.guild.id),
-                "channel",
-                str(message.channel.id),
-            ]
-        )
-    return "/".join(
-        [
-            "guild",
-            str(message.guild.id),
-            "channel",
-            str(message.channel.id),
-            "thread",
-            str(message.thread.id),
-        ]
+    return (
+        "/".join(["guild", "__private__"])
+        if message.guild is None
+        else "/".join(["guild", str(message.guild.id)])
     )
 
 
-def create_configurable(message: Message) -> dict:
+def create_configurable_from_message(message: Message) -> dict:
     """Create a configurable object from a Discord message."""
     return {
-        "thread_id": create_thread_id(message),
+        "thread_id": create_thread_id_from_message(message),
         "message_id": message.id,
         "channel_id": message.channel.id,
         "user_id": message.author.id,
