@@ -1,8 +1,7 @@
 import logging
 from collections.abc import Sequence
-from enum import Enum
 from pathlib import Path
-from typing import Annotated, Literal
+from typing import Literal
 
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.tools.base import BaseTool
@@ -16,47 +15,44 @@ from apeiron.agents.utils import load_prompt
 logger = logging.getLogger(__name__)
 
 
-class ActionType(Enum):
-    """Type of action to take."""
+RESPONSE_PROMPT = """Based on the conversation, decide how to respond:
+1. To send a new message: Use "send" type with your message content
+2. To reply to a specific message: Use "reply" type with content and message_id
+3. If no response needed: Use "noop" type
 
-    SEND = "send"
-    REPLY = "reply"
+Your response must match one of these formats exactly."""
 
 
-class SendResponse(BaseModel):
-    """Response format for sending new messages."""
+class Response(BaseModel):
+    """Response format for Operator 6O."""
 
-    type: Literal["send"] = "send"
-    content: str = Field(
-        description="Content of the message to send",
+    type: Literal["send", "reply", "noop"] = Field(
+        ...,
+        description="Action type: send new message, reply to message, or no operation",
+    )
+    content: str | None = Field(
+        None,
+        description="Content of the message to send or reply",
+        min_length=1,
+        max_length=2000,
     )
 
 
-class ReplyResponse(BaseModel):
-    """Response format for reply messages."""
+def create_agent(
+    tools: Sequence[BaseTool],
+    model: BaseChatModel,
+    **kwargs,
+) -> BaseChatModel:
+    """Create the Operator 6O agent for the graph.
 
-    type: Literal["reply"] = "reply"
-    content: str = Field(
-        description="Content of the reply message",
-    )
-    message_id: int = Field(
-        description="ID of the message to reply to",
-    )
+    Args:
+        tools: Sequence of tools available to the agent
+        model: Base chat model to use
+        **kwargs: Additional arguments passed to create_react_agent
 
-
-class NoopResponse(BaseModel):
-    """Response format for no operation needed."""
-
-    type: Literal["noop"] = "noop"
-
-
-Response = Annotated[
-    SendResponse | ReplyResponse | NoopResponse, Field(discriminator="type")
-]
-
-
-def create_agent(tools: Sequence[BaseTool], model: BaseChatModel, **kwargs):
-    """Create the Operator 6O agent for the graph."""
+    Returns:
+        Configured chat model agent
+    """
     return create_react_agent(
         name="Operator 6O",
         model=model,
@@ -66,7 +62,7 @@ def create_agent(tools: Sequence[BaseTool], model: BaseChatModel, **kwargs):
         prompt=load_prompt(
             Path(__file__).parent.resolve() / f"{Path(__file__).stem}.yaml",
         ),
-        response_format=Response,
+        response_format=(RESPONSE_PROMPT, Response),
         version="v2",
         **kwargs,
     )

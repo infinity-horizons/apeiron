@@ -73,22 +73,12 @@ def create_app():
             match response.type:
                 case "send":
                     await message.channel.send(content=response.content)
-                    logger.info(f"Sent message in {message.channel.name}")
-
                 case "reply":
-                    reply_to = await message.channel.fetch_message(response.message_id)
-                    await reply_to.reply(content=response.content)
-                    logger.info(
-                        "Replied to message %s in %s",
-                        response.message_id,
-                        message.channel.name,
-                    )
-
+                    await message.reply(content=response.content)
                 case "noop":
-                    logger.info("No action needed")
-
+                    logger.debug("No action needed")
                 case _:
-                    logger.error(f"Unknown response type: {response.type}")
+                    logger.warning("Unknown response type: %s", response.type)
 
         except Exception as e:
             logger.error(f"Error generating roast: {str(e)}")
