@@ -18,7 +18,7 @@ def to_dict(user: User) -> dict:
     }
 
 
-class DiscordGetUserInput(BaseModel):
+class GetUserInput(BaseModel):
     user_id: int = Field(description="Discord user ID to look up")
 
 
@@ -27,7 +27,7 @@ class DiscordGetUserTool(BaseDiscordTool):
 
     name: str = "user_profile"
     description: str = "Get information about a Discord user's profile"
-    args_schema: type[DiscordGetUserInput] = DiscordGetUserInput
+    args_schema: type[GetUserInput] = GetUserInput
 
     async def _arun(self, user_id: int) -> dict:
         """Get user profile information.

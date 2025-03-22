@@ -4,12 +4,6 @@ from pydantic import BaseModel, Field
 from apeiron.tools.discord.base import BaseDiscordTool
 
 
-class DiscordGetGuildInput(BaseModel):
-    """Arguments for retrieving Discord guild information."""
-
-    guild_id: str = Field(description="Discord guild (server) ID to look up")
-
-
 def to_dict(guild: Guild) -> dict:
     """Convert guild to dictionary representation."""
     return {
@@ -26,12 +20,18 @@ def to_dict(guild: Guild) -> dict:
     }
 
 
+class GetGuildInput(BaseModel):
+    """Arguments for retrieving Discord guild information."""
+
+    guild_id: str = Field(description="Discord guild (server) ID to look up")
+
+
 class DiscordGetGuildTool(BaseDiscordTool):
     """Tool for retrieving Discord guild information."""
 
     name: str = "get_guild"
     description: str = "Get information about a Discord guild (server)"
-    args_schema: type[DiscordGetGuildInput] = DiscordGetGuildInput
+    args_schema: type[GetGuildInput] = GetGuildInput
 
     async def _arun(self, guild_id: str) -> dict:
         """Get guild information.

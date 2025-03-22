@@ -59,7 +59,7 @@ def to_dict(message: Message) -> dict:
     return message_data
 
 
-class DiscordGetMessageInput(BaseModel):
+class GetMessageInput(BaseModel):
     """Arguments for retrieving a specific Discord message."""
 
     channel_id: int = Field(description="The ID of the channel containing the message")
@@ -71,7 +71,7 @@ class DiscordGetMessageTool(BaseDiscordTool):
 
     name: str = "get_message"
     description: str = "Get a specific message from a Discord channel"
-    args_schema: type[DiscordGetMessageInput] = DiscordGetMessageInput
+    args_schema: type[GetMessageInput] = GetMessageInput
 
     async def _arun(self, channel_id: int, message_id: int) -> dict:
         """Get a specific message.

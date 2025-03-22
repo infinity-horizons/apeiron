@@ -7,7 +7,7 @@ from apeiron.tools.discord.base import BaseDiscordTool
 from apeiron.tools.discord.list_channels import to_dict
 
 
-class DiscordGetChannelInput(BaseModel):
+class GetChannelInput(BaseModel):
     """Arguments for retrieving a specific Discord channel."""
 
     channel_id: int = Field(description="The ID of the channel to retrieve")
@@ -18,7 +18,7 @@ class DiscordGetChannelTool(BaseDiscordTool):
 
     name: str = "get_channel"
     description: str = "Get a specific channel from Discord"
-    args_schema: type[DiscordGetChannelInput] = DiscordGetChannelInput
+    args_schema: type[GetChannelInput] = GetChannelInput
 
     async def _arun(self, channel_id: int) -> dict:
         """Get channel information.
