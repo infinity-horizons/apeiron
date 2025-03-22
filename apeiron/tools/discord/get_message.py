@@ -1,4 +1,4 @@
-from discord import Message
+from discord import Attachment, Message, MessageReference, NotFound, User
 from discord.errors import Forbidden
 from langchain_core.runnables import RunnableConfig
 from langchain_core.tools.base import ToolException
