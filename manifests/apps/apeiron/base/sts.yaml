@@ -18,6 +18,8 @@ spec:
         - name: apeiron
           image: apeiron
           env:
+            - name: AGENT_MODEL
+              value: pixtral-large-2411
             - name: DISCORD_TOKEN
               valueFrom:
                 secretKeyRef:
