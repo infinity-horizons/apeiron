@@ -31,7 +31,7 @@ class DiscordListMessagesTool(BaseDiscordTool):
         before: str | None = None,
         after: str | None = None,
         limit: int = 100,
-    ) -> list[ChatMessage]:
+    ) -> list[dict]:
         try:
             channel = await self.client.fetch_channel(channel_id)
             kwargs = {"limit": limit}

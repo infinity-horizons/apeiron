@@ -8,7 +8,7 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
 import apeiron.logging
-from apeiron.agents.operator_6o import create_agent, get_messages
+from apeiron.agents.operator_6o import create_agent
 from apeiron.chat_models import create_chat_model
 from apeiron.toolkits.discord.toolkit import DiscordToolkit
 from apeiron.tools.discord.utils import (
@@ -58,7 +58,7 @@ def create_app():
             return
 
         try:
-            messages = get_messages() + [create_chat_message(message)]
+            messages = [create_chat_message(message)]
             async with message.channel.typing():
                 _result = await graph.ainvoke(
                     {"messages": messages},

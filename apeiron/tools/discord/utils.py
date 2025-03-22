@@ -1,13 +1,13 @@
 import json
 
 from discord import Client, Message
-from langchain_core.messages import ChatMessage
+from langchain_core.messages import AIMessage, HumanMessage
 
 from apeiron.tools.discord.get_message import to_dict
 
 
-def create_chat_message(message: Message) -> ChatMessage:
-    """Create a message event as ChatMessage."""
+def create_chat_message(message: Message) -> AIMessage | HumanMessage:
+    """Create a message event as AIMessage or HumanMessage."""
     message_payload = to_dict(message)
     event_data = {"type": "on_message_event", "payload": message_payload}
     content = []
@@ -23,9 +23,8 @@ def create_chat_message(message: Message) -> ChatMessage:
         content.append({"type": "text", "text": json.dumps(event_data)})
     else:
         content = json.dumps(event_data)
-    return ChatMessage(
-        content=content, role="assistant" if message.author.bot else "user"
-    )
+
+    return AIMessage(content=content) if message.author.bot else HumanMessage(content=content)
 
 
 def create_thread_id(message: Message) -> str:

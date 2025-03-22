@@ -46,7 +46,7 @@ def _create_messages(
     return processed_messages
 
 
-def load_messages(path: PathLike) -> list[HumanMessage | AIMessage | SystemMessage]:
+def load_prompt(path: PathLike) -> ChatPromptTemplate:
     """Create the prompt template from the given YAML file."""
     with open(path) as f:
         prompt_config = yaml.safe_load(f)
@@ -69,4 +69,4 @@ def load_messages(path: PathLike) -> list[HumanMessage | AIMessage | SystemMessa
             )
         )
     messages.append(MessagesPlaceholder(variable_name="messages"))
-    return messages
+    return ChatPromptTemplate.from_messages(messages)
