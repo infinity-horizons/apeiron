@@ -18,7 +18,9 @@ class Response(BaseModel):
     """Response format for Operator 6O."""
 
     status: str = Field(..., description="Status of the response: 'success' or 'error'")
-    reason: str | None = Field(None, description="Reason for error if status is 'error'")
+    reason: str | None = Field(
+        None, description="Reason for error if status is 'error'"
+    )
 
 
 def create_agent(tools: Sequence[BaseTool], model: BaseChatModel, **kwargs):

@@ -8,7 +8,7 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
 import apeiron.logging
-from apeiron.agents.operator_6o import create_agent, Response
+from apeiron.agents.operator_6o import Response, create_agent
 from apeiron.chat_models import create_chat_model
 from apeiron.toolkits.discord.toolkit import DiscordToolkit
 from apeiron.tools.discord.utils import (
