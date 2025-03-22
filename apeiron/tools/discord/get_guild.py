@@ -1,7 +1,22 @@
-from discord import Guild
+from discord import Guild, Role
 from pydantic import BaseModel, Field
 
 from apeiron.tools.discord.base import BaseDiscordTool
+
+
+def role_to_dict(role: Role) -> dict:
+    """Convert role to dictionary representation."""
+    return {
+        "id": str(role.id),
+        "name": role.name,
+        "color": role.color.value,
+        "position": role.position,
+        "permissions": role.permissions.value,
+        "hoist": role.hoist,
+        "managed": role.managed,
+        "mentionable": role.mentionable,
+        "created_at": str(role.created_at),
+    }
 
 
 def to_dict(guild: Guild) -> dict:
@@ -17,6 +32,7 @@ def to_dict(guild: Guild) -> dict:
         "created_at": str(guild.created_at),
         "premium_tier": guild.premium_tier,
         "premium_subscription_count": guild.premium_subscription_count,
+        "roles": [role_to_dict(role) for role in guild.roles],
     }
 
 

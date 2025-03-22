@@ -16,6 +16,9 @@ class ListMessagesSchema(BaseModel):
     after: str | None = Field(
         None, description="Optional message ID to read messages after"
     )
+    around: str | None = Field(
+        None, description="Optional message ID to read messages around"
+    )
     limit: int = Field(100, description="Number of messages to retrieve (max 100)")
 
 
@@ -31,6 +34,7 @@ class DiscordListMessagesTool(BaseDiscordTool):
         channel_id: int,
         before: str | None = None,
         after: str | None = None,
+        around: str | None = None,
         limit: int = 100,
     ) -> list[dict]:
         """Read messages from a Discord channel with optional filters.
@@ -54,6 +58,8 @@ class DiscordListMessagesTool(BaseDiscordTool):
                 kwargs["before"] = before
             if after:
                 kwargs["after"] = after
+            if around:
+                kwargs["around"] = around
 
             messages = []
             async for message in channel.history(**kwargs):
