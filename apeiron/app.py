@@ -47,11 +47,11 @@ def create_bot():
             return
 
         try:
-            config = RunnableConfig(
-                configurable=create_configurable(message),
-            )
+            config: RunnableConfig = {
+                "configurable": create_configurable(message),
+            }
             if message.guild:
-                config.configurable["guild_id"] = message.guild.id
+                config["configurable"]["guild_id"] = message.guild.id
             async with message.channel.typing():
                 result = await graph.ainvoke(
                     {"messages": [create_chat_message(message)]},
@@ -70,7 +70,7 @@ def create_bot():
                     logger.warning("Unknown response type: %s", response.type)
 
         except Exception as e:
-            logger.error(f"Error generating roast: {str(e)}")
+            logger.error(f"Error handling message event: {str(e)}")
 
     return bot
 

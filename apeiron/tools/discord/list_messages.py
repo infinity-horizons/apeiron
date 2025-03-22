@@ -57,7 +57,7 @@ class DiscordListMessagesTool(BaseDiscordTool):
             ToolException: If the messages fail to read.
         """
         if channel_id is None and config:
-            channel_id = config.configurable.get("channel_id")
+            channel_id = config.get("configurable").get("channel_id")
         try:
             channel = await self.client.fetch_channel(channel_id)
             kwargs = {"limit": limit}

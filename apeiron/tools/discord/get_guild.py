@@ -65,6 +65,6 @@ class DiscordGetGuildTool(BaseDiscordTool):
             Dictionary representation of the guild.
         """
         if guild_id is None and config:
-            guild_id = config.configurable.get("guild_id")
+            guild_id = config.get("configurable").get("guild_id")
         guild = await self.client.fetch_guild(int(guild_id))
         return to_dict(guild)

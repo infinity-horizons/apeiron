@@ -52,7 +52,7 @@ class DiscordGetEmojiTool(BaseDiscordTool):
             Dictionary representation of the emoji.
         """
         if guild_id is None and config:
-            guild_id = config.configurable.get("guild_id")
+            guild_id = config.get("configurable").get("guild_id")
         try:
             guild = await self.client.fetch_guild(guild_id)
             emoji = await guild.fetch_emoji(emoji_id)

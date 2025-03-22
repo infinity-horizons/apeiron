@@ -38,7 +38,7 @@ class DiscordListEmojisTool(BaseDiscordTool):
             ToolException: If the emojis cannot be listed.
         """
         if guild_id is None and config:
-            guild_id = config.configurable.get("guild_id")
+            guild_id = config.get("configurable").get("guild_id")
         try:
             guild = await self.client.fetch_guild(guild_id)
             emojis = await guild.fetch_emojis()
