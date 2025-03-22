@@ -12,7 +12,7 @@ class SearchMembersInput(BaseModel):
         None,
         description="Optional search query to filter members by (case-insensitive)",
     )
-    limit: int | None = Field(description="Number of members to retrieve (max 100)")
+    limit: int = Field(1000, description="Number of members to retrieve (max 100)")
 
 
 class DiscordSearchMembersTool(BaseDiscordTool):
