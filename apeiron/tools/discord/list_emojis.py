@@ -1,25 +1,15 @@
-from discord import Emoji
 from discord.errors import Forbidden, NotFound
 from langchain_core.tools.base import ToolException
 from pydantic import BaseModel, Field
 
 from apeiron.tools.discord.base import BaseDiscordTool
+from apeiron.tools.discord.get_emoji import to_dict
 
 
 class ListEmojisSchema(BaseModel):
     """Arguments for listing Discord emojis."""
 
     guild_id: int = Field(description="The ID of the guild to list emojis from")
-
-
-def to_dict(emoji: Emoji) -> dict:
-    """Convert emoji to dictionary representation."""
-    return {
-        "id": emoji.id,
-        "name": emoji.name,
-        "animated": emoji.animated,
-        "url": str(emoji.url),
-    }
 
 
 class DiscordListEmojisTool(BaseDiscordTool):
