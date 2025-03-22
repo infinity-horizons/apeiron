@@ -1,3 +1,4 @@
+from discord import Emoji
 from discord.errors import Forbidden, NotFound
 from langchain_core.tools.base import ToolException
 from pydantic import BaseModel, Field
@@ -11,6 +12,16 @@ class ListEmojisSchema(BaseModel):
     guild_id: int = Field(description="The ID of the guild to list emojis from")
 
 
+def to_dict(emoji: Emoji) -> dict:
+    """Convert emoji to dictionary representation."""
+    return {
+        "id": emoji.id,
+        "name": emoji.name,
+        "animated": emoji.animated,
+        "url": str(emoji.url),
+    }
+
+
 class DiscordListEmojisTool(BaseDiscordTool):
     """Tool for listing emojis in a Discord guild."""
 
@@ -22,14 +33,6 @@ class DiscordListEmojisTool(BaseDiscordTool):
         try:
             guild = await self.client.fetch_guild(guild_id)
             emojis = await guild.fetch_emojis()
-            return [
-                {
-                    "id": emoji.id,
-                    "name": emoji.name,
-                    "animated": emoji.animated,
-                    "url": str(emoji.url),
-                }
-                for emoji in emojis
-            ]
+            return [to_dict(emoji) for emoji in emojis]
         except (Forbidden, NotFound) as e:
             raise ToolException(f"Failed to list emojis: {str(e)}") from e

@@ -3,7 +3,9 @@ from typing import Any
 from langchain_core.tools.base import BaseTool, BaseToolkit
 
 from apeiron.tools.discord.add_reaction import DiscordAddReactionTool
+from apeiron.tools.discord.get_guild import DiscordGetGuildTool
 from apeiron.tools.discord.get_user import DiscordGetUserTool
+from apeiron.tools.discord.list_channels import DiscordListChannelsTool
 from apeiron.tools.discord.list_emojis import DiscordListEmojisTool
 from apeiron.tools.discord.list_messages import DiscordListMessagesTool
 from apeiron.tools.discord.reply_message import DiscordReplyMessageTool
@@ -26,6 +28,9 @@ class DiscordToolkit(BaseToolkit):
             DiscordAddReactionTool(client=self.client),
             DiscordListEmojisTool(client=self.client),
             DiscordListMessagesTool(client=self.client),
+            DiscordListChannelsTool(client=self.client),
             DiscordReplyMessageTool(client=self.client),
             DiscordSendMessageTool(client=self.client),
+            DiscordGetUserTool(client=self.client),
+            DiscordGetGuildTool(client=self.client),
         ]
