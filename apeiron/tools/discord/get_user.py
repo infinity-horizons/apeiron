@@ -24,15 +24,15 @@ class DiscordGetUserInput(BaseModel):
 class DiscordGetUserTool(BaseTool):
     """Tool for retrieving Discord user profile information."""
 
-    name = "user_profile"
-    description = "Get information about a Discord user's profile"
-    args_schema = DiscordGetUserInput
+    name: str = "user_profile"
+    description: str = "Get information about a Discord user's profile"
+    args_schema: type[DiscordGetUserInput] = DiscordGetUserInput
 
     def __init__(self, client: Client):
         super().__init__()
         self.client = client
 
-        async def _arun(self, user_id: int) -> dict:
+    async def _arun(self, user_id: int) -> dict:
             """Get user profile information."""
             user = await self.client.fetch_user(user_id)
             return to_dict(user)

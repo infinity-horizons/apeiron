@@ -3,12 +3,12 @@ import json
 from discord import Client, Message
 from langchain_core.messages import ChatMessage
 
-from apeiron.tools.discord.list_messages import message_to_dict
+from apeiron.tools.discord.get_message import to_dict
 
 
 def create_chat_message(message: Message) -> ChatMessage:
     """Create a message event as ChatMessage."""
-    message_payload = message_to_dict(message)
+    message_payload = to_dict(message)
     event_data = {"type": "on_message_event", "payload": message_payload}
     content = []
     for attachment in message.attachments:
