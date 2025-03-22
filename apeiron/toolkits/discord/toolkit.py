@@ -22,6 +22,7 @@ class DiscordToolkit(BaseToolkit):
 
     def get_tools(self) -> list[BaseTool]:
         """Get the tools in the toolkit.
+
         Returns:
             List of Discord tools.
         """
