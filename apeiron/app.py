@@ -3,7 +3,7 @@ import logging
 import os
 from contextlib import asynccontextmanager, suppress
 
-import discord
+from discord import AutoShardedBot, Intents, Message
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
@@ -36,18 +36,13 @@ def create_app():
     model = create_chat_model(provider_name=agent_provider, model_name=agent_model)
 
     # Initialize the Discord client
-    # Set up intents with message content and DM permissions
-    intents = discord.Intents.default()
-    intents.message_content = True
-    intents.dm_messages = True
-
-    bot = discord.Bot(intents=intents)
+    bot = AutoShardedBot(intents=Intents.all())
     tools = DiscordToolkit(client=bot).get_tools()
     graph = create_agent(tools=tools, model=model)
 
     # Discord message handler directly in create_app
     @bot.listen
-    async def on_message(message: discord.Message):
+    async def on_message(message: Message):
         if is_bot_message(bot, message):
             return
 
