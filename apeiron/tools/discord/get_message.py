@@ -67,9 +67,9 @@ class DiscordGetMessageInput(BaseModel):
 class DiscordGetMessageTool(BaseDiscordTool):
     """Tool for retrieving a specific Discord message."""
 
-    name = "get_message"
-    description = "Get a specific message from a Discord channel"
-    args_schema = DiscordGetMessageInput
+    name: str = "get_message"
+    description: str = "Get a specific message from a Discord channel"
+    args_schema: type[DiscordGetMessageInput] = DiscordGetMessageInput
 
     async def _arun(self, channel_id: int, message_id: int) -> dict:
         """Get a specific message."""
