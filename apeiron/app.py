@@ -51,7 +51,6 @@ def create_bot():
                 "configurable": create_configurable(message),
             }
             if message.guild:
-                breakpoint()
                 config["configurable"]["guild_id"] = message.guild.id
             async with message.channel.typing():
                 result = await graph.ainvoke(
