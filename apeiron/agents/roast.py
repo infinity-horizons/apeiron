@@ -8,7 +8,7 @@ from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.prebuilt import create_react_agent
 from langgraph.store.memory import InMemoryStore
 
-from apeiron.agents.utils import load_prompt
+from apeiron.agents.utils import load_messages
 
 logger = logging.getLogger(__name__)
 
@@ -21,9 +21,13 @@ def create_agent(tools: Sequence[BaseTool], model: BaseChatModel, **kwargs):
         tools=tools,
         store=InMemoryStore(),
         checkpointer=InMemorySaver(),
-        prompt=load_prompt(
-            Path(__file__).parent.resolve() / f"{Path(__file__).stem}.yaml",
-        ),
         version="v2",
         **kwargs,
+    )
+
+
+def get_messages():
+    """Get the messages for the Operator 6O agent."""
+    return load_messages(
+        Path(__file__).parent.resolve() / f"{Path(__file__).stem}.yaml",
     )
