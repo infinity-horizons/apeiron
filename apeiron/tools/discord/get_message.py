@@ -59,7 +59,9 @@ def to_dict(message: Message) -> dict:
         "guild_id": str(message.guild.id) if message.guild else None,
         "timestamp": str(message.created_at),
         "edited_timestamp": str(message.edited_at) if message.edited_at else None,
-        "attachments": [attachment_to_dict(attachment) for attachment in message.attachments],
+        "attachments": [
+            attachment_to_dict(attachment) for attachment in message.attachments
+        ],
     }
 
     if message.reference and message.reference.resolved:
