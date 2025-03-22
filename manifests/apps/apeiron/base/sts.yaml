@@ -18,6 +18,8 @@ spec:
         - name: apeiron
           image: apeiron
           env:
+            - name: AGENT_MODEL
+              value: pixtral-large-latest
             - name: DISCORD_TOKEN
               valueFrom:
                 secretKeyRef:
@@ -30,9 +32,12 @@ spec:
                 secretKeyRef:
                   name: apeiron
                   key: mistral_api_key
+          ports:
+            - containerPort: 8000
+              name: http
           readinessProbe:
             httpGet:
-              path: /health``
+              path: /healthz
               port: http
             initialDelaySeconds: 30
           livenessProbe:

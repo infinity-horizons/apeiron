@@ -3,6 +3,7 @@ from langchain_core.tools.base import ToolException
 from pydantic import BaseModel, Field
 
 from apeiron.tools.discord.base import BaseDiscordTool
+from apeiron.tools.discord.get_emoji import to_dict
 
 
 class ListEmojisSchema(BaseModel):
@@ -19,17 +20,20 @@ class DiscordListEmojisTool(BaseDiscordTool):
     args_schema: type[ListEmojisSchema] = ListEmojisSchema
 
     async def _arun(self, guild_id: int) -> list[dict]:
+        """List all emojis in a Discord guild.
+
+        Args:
+            guild_id: The ID of the guild to list emojis from.
+
+        Returns:
+            A list of dictionaries containing emoji information.
+
+        Raises:
+            ToolException: If the emojis cannot be listed.
+        """
         try:
             guild = await self.client.fetch_guild(guild_id)
             emojis = await guild.fetch_emojis()
-            return [
-                {
-                    "id": emoji.id,
-                    "name": emoji.name,
-                    "animated": emoji.animated,
-                    "url": str(emoji.url),
-                }
-                for emoji in emojis
-            ]
+            return [to_dict(emoji) for emoji in emojis]
         except (Forbidden, NotFound) as e:
             raise ToolException(f"Failed to list emojis: {str(e)}") from e

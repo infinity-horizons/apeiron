@@ -29,12 +29,15 @@ class DiscordReplyMessageTool(BaseDiscordTool):
         """Reply to a message in a Discord channel.
 
         Args:
-            content: The content of the reply message
-            message_id: Optional ID of the message to reply to
-            channel_id: Optional ID of the channel containing the message
+            content: The content of the reply message.
+            message_id: Optional ID of the message to reply to.
+            channel_id: Optional ID of the channel containing the message.
 
         Returns:
-            str: Confirmation message with the reply ID
+            Confirmation message with the reply ID.
+
+        Raises:
+            ToolException: If there is an issue sending the reply.
         """
         try:
             channel = await self.client.fetch_channel(channel_id)
