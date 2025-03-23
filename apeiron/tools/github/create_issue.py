@@ -52,10 +52,6 @@ class GitHubCreateIssueTool(BaseGithubTool):
         Returns:
             The created issue's number and URL.
         """
-        # Handle both repository name and full name formats
-        if "/" not in repository:
-            repository = f"{self.client.get_user().login}/{repository}"
-
         repo = self.client.get_repo(repository)
         issue = repo.create_issue(
             title=title,
@@ -63,7 +59,6 @@ class GitHubCreateIssueTool(BaseGithubTool):
             labels=labels,
             assignees=assignees,
         )
-
         return {
             "number": issue.number,
             "url": issue.html_url,
