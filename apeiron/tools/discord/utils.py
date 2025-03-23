@@ -7,8 +7,8 @@ from apeiron.tools.discord.get_guild import to_dict as guild_to_dict
 from apeiron.tools.discord.get_message import to_dict as message_to_dict
 
 
-def create_guild_joined_chat_message(guild: Guild) -> AIMessage:
-    """Create a guild joined event."""
+def create_guild_available_chat_message(guild: Guild) -> AIMessage:
+    """Create a guild available chat message."""
     guild_payload = guild_to_dict(guild)
     event_data = {"type": "guild_joined", "payload": guild_payload}
     return HumanMessage(content=json.dumps(event_data))

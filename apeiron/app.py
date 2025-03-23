@@ -17,7 +17,7 @@ from apeiron.toolkits.github.toolkit import GitHubToolkit
 from apeiron.tools.discord.utils import (
     create_configurable_from_guild,
     create_configurable_from_message,
-    create_guild_joined_chat_message,
+    create_guild_available_chat_message,
     create_message_received_chat_message,
     is_bot_mentioned,
     is_bot_message,
@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 def create_bot():
     # Initialize the MistralAI model
-    agent_model = os.getenv("AGENT_MODEL", "pixtral-12b-2409")
+    agent_model = os.getenv("AGENT_MODEL", "pixtral-large-2411")
     agent_provider = os.getenv("AGENT_PROVIDER", "mistralai")
     model = create_chat_model(provider_name=agent_provider, model_name=agent_model)
 
@@ -53,13 +53,13 @@ def create_bot():
         logger.info(f"Logged in as {bot.user.name}")
 
     @bot.listen
-    async def on_guild_join(guild: Guild):
+    async def on_guild_available(guild: Guild):
         try:
             config: RunnableConfig = {
                 "configurable": create_configurable_from_guild(guild),
             }
             result = await graph.ainvoke(
-                {"messages": [create_guild_joined_chat_message(guild)]},
+                {"messages": [create_guild_available_chat_message(guild)]},
                 config=config,
             )
             response: Response = result["structured_response"]
