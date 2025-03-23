@@ -7,7 +7,9 @@ class CreatePullRequestInput(BaseModel):
     """Input for creating a pull request."""
 
     repository: str = Field(
-        description="The repository name or full name (owner/repo) to create the pull request in.",
+        description=(
+            "The repository name in owner/repo format for creating the pull request.",
+        )
     )
     title: str = Field(
         description="The title of the pull request.",

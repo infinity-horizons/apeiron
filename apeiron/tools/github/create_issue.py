@@ -7,7 +7,7 @@ class CreateIssueInput(BaseModel):
     """Input for creating an issue."""
 
     repository: str = Field(
-        description="The repository name or full name (owner/repo) to create the issue in.",
+        description="The repository name (owner/repo) where the issue will be created.",
     )
     title: str = Field(
         description="The title of the issue.",
