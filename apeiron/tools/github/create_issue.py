@@ -25,17 +25,6 @@ class CreateIssueInput(BaseModel):
     )
 
 
-class CreateIssueOutput(BaseModel):
-    """Output for creating an issue."""
-
-    number: int = Field(
-        description="The issue number.",
-    )
-    url: str = Field(
-        description="The URL of the created issue.",
-    )
-
-
 class GitHubCreateIssueTool(BaseGithubTool):
     """Tool for creating GitHub issues."""
 
@@ -50,7 +39,7 @@ class GitHubCreateIssueTool(BaseGithubTool):
         body: str,
         labels: list[str] | None = None,
         assignees: list[str] | None = None,
-    ) -> CreateIssueOutput:
+    ) -> dict:
         """Create a GitHub issue asynchronously.
 
         Args:
@@ -75,7 +64,7 @@ class GitHubCreateIssueTool(BaseGithubTool):
             assignees=assignees,
         )
 
-        return CreateIssueOutput(
-            number=issue.number,
-            url=issue.html_url,
-        )
+        return {
+            "number": issue.number,
+            "url": issue.html_url,
+        }

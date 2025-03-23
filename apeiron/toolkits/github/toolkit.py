@@ -20,8 +20,8 @@ class GitHubToolkit(BaseToolkit):
             List of GitHub tools.
         """
         return [
-            GitHubListReposTool(client=self.client),
             GitHubCreateIssueTool(client=self.client),
             GitHubCreatePullRequestTool(client=self.client),
             GitHubGetRepoTool(client=self.client),
+            GitHubListReposTool(client=self.client),
         ]

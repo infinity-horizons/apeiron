@@ -1,5 +1,3 @@
-from typing import Any
-
 from pydantic import BaseModel, Field
 
 from apeiron.tools.github.base import BaseGithubTool
@@ -14,14 +12,6 @@ class ListReposInput(BaseModel):
     )
 
 
-class ListReposOutput(BaseModel):
-    """Output for listing repositories."""
-
-    repositories: list[dict[str, Any]] = Field(
-        description="List of repositories with their details.",
-    )
-
-
 class GitHubListReposTool(BaseGithubTool):
     """Tool for listing GitHub repositories."""
 
@@ -32,14 +22,14 @@ class GitHubListReposTool(BaseGithubTool):
     async def _arun(
         self,
         visibility: str = "all",
-    ) -> ListReposOutput:
+    ) -> dict:
         """List GitHub repositories asynchronously.
 
         Args:
             visibility: Filter repositories by visibility (all, public, private).
 
         Returns:
-            List of repositories with their details.
+            Dictionary containing a list of repositories with their details.
         """
         repos = []
         for repo in self.client.get_user().get_repos(visibility=visibility):
@@ -57,4 +47,4 @@ class GitHubListReposTool(BaseGithubTool):
                     "stargazers_count": repo.stargazers_count,
                 }
             )
-        return ListReposOutput(repositories=repos)
+        return {"repositories": repos}

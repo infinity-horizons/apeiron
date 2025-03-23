@@ -32,17 +32,6 @@ class CreatePullRequestInput(BaseModel):
     )
 
 
-class CreatePullRequestOutput(BaseModel):
-    """Output for creating a pull request."""
-
-    number: int = Field(
-        description="The pull request number.",
-    )
-    url: str = Field(
-        description="The URL of the created pull request.",
-    )
-
-
 class GitHubCreatePullRequestTool(BaseGithubTool):
     """Tool for creating GitHub pull requests."""
 
@@ -59,7 +48,7 @@ class GitHubCreatePullRequestTool(BaseGithubTool):
         base: str = "main",
         draft: bool = False,
         reviewers: list[str] | None = None,
-    ) -> CreatePullRequestOutput:
+    ) -> dict:
         """Create a GitHub pull request asynchronously.
 
         Args:
@@ -90,7 +79,7 @@ class GitHubCreatePullRequestTool(BaseGithubTool):
         if reviewers:
             pr.create_review_request(reviewers=reviewers)
 
-        return CreatePullRequestOutput(
-            number=pr.number,
-            url=pr.html_url,
-        )
+        return {
+            "number": pr.number,
+            "url": pr.html_url,
+        }
