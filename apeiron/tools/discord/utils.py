@@ -10,7 +10,11 @@ from apeiron.tools.discord.get_message import to_dict as message_to_dict
 def create_guild_available_chat_message(guild: Guild) -> AIMessage:
     """Create a guild available chat message."""
     guild_payload = guild_to_dict(guild)
-    event_data = {"type": "guild_available", "payload": guild_payload}
+    event_data = {
+        "type": "guild_available",
+        "description": "When a guild becomes available or unavailable.",
+        "payload": guild_payload,
+    }
     return HumanMessage(content=json.dumps(event_data))
 
 
@@ -30,7 +34,11 @@ def create_configurable_from_guild(guild: Guild) -> dict:
 def create_message_received_chat_message(message: Message) -> AIMessage | HumanMessage:
     """Create a message event as AIMessage or HumanMessage."""
     message_payload = message_to_dict(message)
-    event_data = {"type": "message_received", "payload": message_payload}
+    event_data = {
+        "type": "message_received",
+        "description": "When a message is received.",
+        "payload": message_payload,
+    }
     content = []
     for attachment in message.attachments:
         if attachment.content_type and attachment.content_type.startswith("image/"):
