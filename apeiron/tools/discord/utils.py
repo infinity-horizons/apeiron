@@ -1,18 +1,41 @@
 import json
 
 from discord import Client, Guild, Message
-from langchain_core.messages import AIMessage, HumanMessage
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 
 from apeiron.tools.discord.get_guild import to_dict as guild_to_dict
 from apeiron.tools.discord.get_message import to_dict as message_to_dict
 
 
-def create_guild_available_chat_message(guild: Guild) -> AIMessage:
-    """Create a guild available chat message."""
+def create_guild_availability_system_message() -> SystemMessage:
+    """Create a system message for guild availability events."""
+    return SystemMessage(
+        content=(
+            "When a guild (Discord server) becomes available or unavailable. "
+            "This event occurs when a guild connects or disconnects from "
+            "Discord's gateway, indicating server status changes that may "
+            "affect bot functionality."
+        )
+    )
+
+
+def create_message_received_system_message() -> SystemMessage:
+    """Create a system message for message received events."""
+    return SystemMessage(
+        content=(
+            "When a message is received in a Discord channel. This includes "
+            "text messages, attachments, embeds, and other message components "
+            "that users or bots can send. The message may come from a guild "
+            "channel or direct message."
+        )
+    )
+
+
+def create_guild_availability_message(guild: Guild) -> AIMessage:
+    """Create a guild availability event."""
     guild_payload = guild_to_dict(guild)
     event_data = {
         "type": "guild_available",
-        "description": "When a guild becomes available or unavailable.",
         "payload": guild_payload,
     }
     return HumanMessage(content=json.dumps(event_data))
@@ -31,12 +54,11 @@ def create_configurable_from_guild(guild: Guild) -> dict:
     }
 
 
-def create_message_received_chat_message(message: Message) -> AIMessage | HumanMessage:
+def create_message_received_message(message: Message) -> AIMessage | HumanMessage:
     """Create a message event as AIMessage or HumanMessage."""
     message_payload = message_to_dict(message)
     event_data = {
         "type": "message_received",
-        "description": "When a message is received.",
         "payload": message_payload,
     }
     content = []
