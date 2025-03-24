@@ -15,8 +15,10 @@ from apeiron.toolkits.discord.toolkit import DiscordToolkit
 from apeiron.tools.discord.utils import (
     create_configurable_from_guild,
     create_configurable_from_message,
-    create_guild_available_chat_message,
-    create_message_received_chat_message,
+    create_guild_availability_message,
+    create_guild_availability_system_message,
+    create_message_received_message,
+    create_message_received_system_message,
     is_bot_mentioned,
     is_bot_message,
     is_private_channel,
@@ -47,7 +49,12 @@ def create_bot():
                 "configurable": create_configurable_from_guild(guild),
             }
             result = await graph.ainvoke(
-                {"messages": [create_guild_available_chat_message(guild)]},
+                {
+                    "messages": [
+                        create_guild_availability_system_message(),
+                        create_guild_availability_message(guild),
+                    ]
+                },
                 config=config,
             )
             response: Response = result["structured_response"]
@@ -83,7 +90,12 @@ def create_bot():
                 config["configurable"]["guild_id"] = message.guild.id
             async with message.channel.typing():
                 result = await graph.ainvoke(
-                    {"messages": [create_message_received_chat_message(message)]},
+                    {
+                        "messages": [
+                            create_message_received_system_message(),
+                            create_message_received_message(message),
+                        ]
+                    },
                     config=config,
                 )
             response: Response = result["structured_response"]
