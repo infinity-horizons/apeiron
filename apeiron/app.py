@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 def create_bot():
     # Initialize the MistralAI model
-    agent_model = os.getenv("AGENT_MODEL", "pixtral-12b-2409")
+    agent_model = os.getenv("AGENT_MODEL", "pixtral-large-2411")
     agent_provider = os.getenv("AGENT_PROVIDER", "mistralai")
     model = create_chat_model(provider_name=agent_provider, model_name=agent_model)
 
