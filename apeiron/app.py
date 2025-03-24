@@ -6,12 +6,14 @@ from contextlib import asynccontextmanager, suppress
 from discord import AutoShardedBot, Client, Guild, Intents, Message
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
+from github import Auth, GithubIntegration
 from langchain_core.runnables import RunnableConfig
 
 import apeiron.logging
 from apeiron.agents.operator_6o import Response, create_agent
 from apeiron.chat_models import create_chat_model
 from apeiron.toolkits.discord.toolkit import DiscordToolkit
+from apeiron.toolkits.github.toolkit import GitHubToolkit
 from apeiron.tools.discord.utils import (
     create_configurable_from_guild,
     create_configurable_from_message,
@@ -33,7 +35,17 @@ def create_bot():
 
     # Initialize the Discord client
     bot = AutoShardedBot(intents=Intents.all())
-    tools = DiscordToolkit(client=bot).get_tools()
+    github = GithubIntegration(
+        auth=Auth.AppAuth(
+            os.getenv("GITHUB_APP_ID"),
+            os.getenv("GITHUB_APP_PRIVATE_KEY"),
+        )
+    )
+
+    # Initialize toolkits
+    discord_tools = DiscordToolkit(client=bot).get_tools()
+    github_tools = GitHubToolkit(client=github).get_tools()
+    tools = discord_tools + github_tools
     graph = create_agent(tools=tools, model=model)
 
     @bot.listen
