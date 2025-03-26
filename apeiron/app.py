@@ -3,7 +3,7 @@ import logging
 import os
 from contextlib import asynccontextmanager, suppress
 
-from discord import AutoShardedBot, Client, Guild, Intents, Message
+from discord import AutoShardedBot, Client, Intents, Message
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from langchain_core.runnables import RunnableConfig
@@ -13,12 +13,8 @@ from apeiron.agents.operator_6o import Response, create_agent
 from apeiron.chat_models import create_chat_model
 from apeiron.toolkits.discord.toolkit import DiscordToolkit
 from apeiron.tools.discord.utils import (
-    create_configurable_from_guild,
-    create_configurable_from_message,
-    create_guild_availability_message,
-    create_guild_availability_system_message,
-    create_message_received_message,
-    create_message_received_system_message,
+    create_chat_message,
+    create_configurable,
     is_bot_mentioned,
     is_bot_message,
     is_private_channel,
@@ -38,39 +34,7 @@ def create_bot():
     tools = DiscordToolkit(client=bot).get_tools()
     graph = create_agent(tools=tools, model=model)
 
-    @bot.listen
-    async def on_ready():
-        logger.info(f"Logged in as {bot.user.name}")
-
-    @bot.listen
-    async def on_guild_available(guild: Guild):
-        try:
-            config: RunnableConfig = {
-                "configurable": create_configurable_from_guild(guild),
-            }
-            result = await graph.ainvoke(
-                {
-                    "messages": [
-                        create_guild_availability_system_message(),
-                        create_guild_availability_message(guild),
-                    ]
-                },
-                config=config,
-            )
-            response: Response = result["structured_response"]
-
-            match response.type:
-                case "send":
-                    if guild.system_channel:
-                        await guild.system_channel.send(content=response.content)
-                case "noop":
-                    logger.debug("No action needed")
-                case _:
-                    logger.warning("Unknown response type: %s", response.type)
-
-        except Exception as e:
-            logger.error(f"Error handling guild join event: {str(e)}")
-
+    # Discord message handler directly in create_app
     @bot.listen
     async def on_message(message: Message):
         if is_bot_message(bot, message):
@@ -84,18 +48,13 @@ def create_bot():
 
         try:
             config: RunnableConfig = {
-                "configurable": create_configurable_from_message(message),
+                "configurable": create_configurable(message),
             }
             if message.guild:
                 config["configurable"]["guild_id"] = message.guild.id
             async with message.channel.typing():
                 result = await graph.ainvoke(
-                    {
-                        "messages": [
-                            create_message_received_system_message(),
-                            create_message_received_message(message),
-                        ]
-                    },
+                    {"messages": [create_chat_message(message)]},
                     config=config,
                 )
             response: Response = result["structured_response"]
