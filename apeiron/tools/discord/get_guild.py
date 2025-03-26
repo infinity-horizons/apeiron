@@ -38,7 +38,7 @@ def to_dict(guild: Guild) -> dict:
     }
 
 
-class GetGuildSchema(BaseModel):
+class GetGuildInput(BaseModel):
     """Arguments for retrieving Discord guild information."""
 
     guild_id: str | None = Field(
@@ -49,11 +49,7 @@ class GetGuildSchema(BaseModel):
 def create_get_guild_tool(client: Client):
     """Create a tool for retrieving Discord guild information."""
 
-    @tool(
-        name="get_guild",
-        description="Get information about a Discord guild (server)",
-        args_schema=GetGuildSchema,
-    )
+    @tool(args_schema=GetGuildInput)
     async def get_guild(
         guild_id: str | None = None,
         config: RunnableConfig | None = None,

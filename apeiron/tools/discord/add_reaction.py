@@ -6,7 +6,7 @@ from langchain_core.tools.base import ToolException
 from pydantic import BaseModel, Field
 
 
-class AddReactionSchema(BaseModel):
+class AddReactionInput(BaseModel):
     """Arguments for adding reactions to Discord messages."""
 
     emoji: str = Field(description="The emoji to react with")
@@ -21,11 +21,7 @@ class AddReactionSchema(BaseModel):
 def create_add_reaction_tool(client: Client):
     """Create a tool for adding reactions to Discord messages."""
 
-    @tool(
-        name="add_reaction",
-        description="Add a reaction to a message in a Discord channel",
-        args_schema=AddReactionSchema,
-    )
+    @tool(args_schema=AddReactionInput)
     async def add_reaction(
         emoji: str,
         message_id: int | None = None,
