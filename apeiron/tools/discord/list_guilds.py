@@ -1,5 +1,4 @@
 from discord import Client
-from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import tool
 from pydantic import BaseModel, Field
 
@@ -21,7 +20,11 @@ class ListGuildsSchema(BaseModel):
 def create_list_guilds_tool(client: Client):
     """Create a tool for listing Discord guilds the bot is a member of."""
 
-    @tool(name="list_guilds", description="List all Discord guilds (servers) the bot is a member of", args_schema=ListGuildsSchema)
+    @tool(
+        name="list_guilds",
+        description="List all Discord guilds (servers) the bot is a member of",
+        args_schema=ListGuildsSchema,
+    )
     async def list_guilds(
         before: str | None = None,
         after: str | None = None,

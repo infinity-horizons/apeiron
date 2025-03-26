@@ -1,8 +1,8 @@
-from discord import Emoji, Client
+from discord import Client, Emoji
 from discord.errors import Forbidden, NotFound
 from langchain_core.runnables import RunnableConfig
-from langchain_core.tools.base import ToolException
 from langchain_core.tools import tool
+from langchain_core.tools.base import ToolException
 from pydantic import BaseModel, Field
 
 
@@ -33,7 +33,11 @@ class GetEmojiSchema(BaseModel):
 def create_get_emoji_tool(client: Client):
     """Create a tool for retrieving a specific Discord emoji."""
 
-    @tool(name="get_emoji", description="Get a specific emoji from a Discord guild", args_schema=GetEmojiSchema)
+    @tool(
+        name="get_emoji",
+        description="Get a specific emoji from a Discord guild",
+        args_schema=GetEmojiSchema,
+    )
     async def get_emoji(
         emoji_id: int,
         guild_id: int | None = None,

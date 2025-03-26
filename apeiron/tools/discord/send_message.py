@@ -1,8 +1,8 @@
 from discord import Client, Embed, File, MessageReference
 from discord.errors import Forbidden, NotFound
 from langchain_core.runnables import RunnableConfig
-from langchain_core.tools.base import ToolException
 from langchain_core.tools import tool
+from langchain_core.tools.base import ToolException
 from pydantic import BaseModel, Field
 
 
@@ -39,7 +39,11 @@ class SendMessageSchema(BaseModel):
 def create_send_message_tool(client: Client):
     """Create a tool for sending messages to a Discord channel."""
 
-    @tool(name="send_message", description="Send a message to a Discord channel", args_schema=SendMessageSchema)
+    @tool(
+        name="send_message",
+        description="Send a message to a Discord channel",
+        args_schema=SendMessageSchema,
+    )
     async def send_message(
         content: str | None = None,
         channel_id: int | None = None,
