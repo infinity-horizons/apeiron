@@ -1,8 +1,8 @@
-from discord import Guild, Role, Client
+from discord import Client, Guild, Role
 from discord.errors import Forbidden, NotFound
 from langchain_core.runnables import RunnableConfig
-from langchain_core.tools.base import ToolException
 from langchain_core.tools import tool
+from langchain_core.tools.base import ToolException
 from pydantic import BaseModel, Field
 
 
@@ -49,7 +49,11 @@ class GetGuildSchema(BaseModel):
 def create_get_guild_tool(client: Client):
     """Create a tool for retrieving Discord guild information."""
 
-    @tool(name="get_guild", description="Get information about a Discord guild (server)", args_schema=GetGuildSchema)
+    @tool(
+        name="get_guild",
+        description="Get information about a Discord guild (server)",
+        args_schema=GetGuildSchema,
+    )
     async def get_guild(
         guild_id: str | None = None,
         config: RunnableConfig | None = None,

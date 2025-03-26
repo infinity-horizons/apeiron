@@ -1,8 +1,8 @@
 from discord import Client, Member
 from discord.errors import Forbidden, NotFound
 from langchain_core.runnables import RunnableConfig
-from langchain_core.tools.base import ToolException
 from langchain_core.tools import tool
+from langchain_core.tools.base import ToolException
 from pydantic import BaseModel, Field
 
 
@@ -40,7 +40,11 @@ class ListMembersSchema(BaseModel):
 def create_list_members_tool(client: Client):
     """Create a tool for listing Discord guild members."""
 
-    @tool(name="list_members", description="List all members in a Discord guild (server)", args_schema=ListMembersSchema)
+    @tool(
+        name="list_members",
+        description="List all members in a Discord guild (server)",
+        args_schema=ListMembersSchema,
+    )
     async def list_members(
         guild_id: int | None = None,
         before: str | None = None,

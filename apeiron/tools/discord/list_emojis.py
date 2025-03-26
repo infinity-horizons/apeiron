@@ -1,8 +1,8 @@
 from discord import Client
 from discord.errors import Forbidden, NotFound
 from langchain_core.runnables import RunnableConfig
-from langchain_core.tools.base import ToolException
 from langchain_core.tools import tool
+from langchain_core.tools.base import ToolException
 from pydantic import BaseModel, Field
 
 from apeiron.tools.discord.get_emoji import to_dict
@@ -19,7 +19,11 @@ class ListEmojisSchema(BaseModel):
 def create_list_emojis_tool(client: Client):
     """Create a tool for listing emojis in a Discord guild."""
 
-    @tool(name="list_emojis", description="List all emojis in a Discord guild", args_schema=ListEmojisSchema)
+    @tool(
+        name="list_emojis",
+        description="List all emojis in a Discord guild",
+        args_schema=ListEmojisSchema,
+    )
     async def list_emojis(
         guild_id: int | None = None,
         config: RunnableConfig | None = None,

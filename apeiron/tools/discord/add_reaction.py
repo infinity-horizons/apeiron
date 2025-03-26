@@ -1,8 +1,8 @@
-from discord.errors import Forbidden, NotFound
 from discord import Client
+from discord.errors import Forbidden, NotFound
 from langchain_core.runnables import RunnableConfig
-from langchain_core.tools.base import ToolException
 from langchain_core.tools import tool
+from langchain_core.tools.base import ToolException
 from pydantic import BaseModel, Field
 
 
@@ -21,7 +21,11 @@ class AddReactionSchema(BaseModel):
 def create_add_reaction_tool(client: Client):
     """Create a tool for adding reactions to Discord messages."""
 
-    @tool(name="add_reaction", description="Add a reaction to a message in a Discord channel", args_schema=AddReactionSchema)
+    @tool(
+        name="add_reaction",
+        description="Add a reaction to a message in a Discord channel",
+        args_schema=AddReactionSchema,
+    )
     async def add_reaction(
         emoji: str,
         message_id: int | None = None,
