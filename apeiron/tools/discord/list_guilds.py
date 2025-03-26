@@ -1,10 +1,11 @@
+from discord import Client
+from langchain_core.tools import tool
 from pydantic import BaseModel, Field
 
-from apeiron.tools.discord.base import BaseDiscordTool
 from apeiron.tools.discord.get_guild import to_dict
 
 
-class ListGuildsSchema(BaseModel):
+class ListGuildsInput(BaseModel):
     """Arguments for listing Discord guilds."""
 
     before: str | None = Field(
@@ -16,15 +17,11 @@ class ListGuildsSchema(BaseModel):
     limit: int = Field(100, description="Number of guilds to retrieve (max 100)")
 
 
-class DiscordListGuildsTool(BaseDiscordTool):
-    """Tool for listing Discord guilds the bot is a member of."""
+def create_list_guilds_tool(client: Client):
+    """Create a tool for listing Discord guilds the bot is a member of."""
 
-    name: str = "list_guilds"
-    description: str = "List all Discord guilds (servers) the bot is a member of"
-    args_schema: type[ListGuildsSchema] = ListGuildsSchema
-
-    async def _arun(
-        self,
+    @tool(args_schema=ListGuildsInput)
+    async def list_guilds(
         before: str | None = None,
         after: str | None = None,
         limit: int = 100,
@@ -35,7 +32,6 @@ class DiscordListGuildsTool(BaseDiscordTool):
             before: Optional guild ID to list guilds before.
             after: Optional guild ID to list guilds after.
             limit: Number of guilds to retrieve (max 100).
-            config: Optional RunnableConfig object.
 
         Returns:
             List of guild dictionaries.
@@ -46,5 +42,7 @@ class DiscordListGuildsTool(BaseDiscordTool):
         if after:
             kwargs["after"] = after
 
-        guilds = await self.client.fetch_guilds(**kwargs).flatten()
+        guilds = await client.fetch_guilds(**kwargs).flatten()
         return [to_dict(guild) for guild in guilds]
+
+    return list_guilds

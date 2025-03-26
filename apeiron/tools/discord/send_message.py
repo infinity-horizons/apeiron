@@ -1,13 +1,12 @@
-from discord import Embed, File, MessageReference
+from discord import Client, Embed, File, MessageReference
 from discord.errors import Forbidden, NotFound
 from langchain_core.runnables import RunnableConfig
+from langchain_core.tools import tool
 from langchain_core.tools.base import ToolException
 from pydantic import BaseModel, Field
 
-from apeiron.tools.discord.base import BaseDiscordTool
 
-
-class SendMessageSchema(BaseModel):
+class SendMessageInput(BaseModel):
     """Arguments for sending Discord messages."""
 
     content: str | None = Field(None, description="The content of the message to send")
@@ -37,15 +36,11 @@ class SendMessageSchema(BaseModel):
     )
 
 
-class DiscordSendMessageTool(BaseDiscordTool):
-    """Tool for sending messages to a Discord channel."""
+def create_send_message_tool(client: Client):
+    """Create a tool for sending messages to a Discord channel."""
 
-    name: str = "send_message"
-    description: str = "Send a message to a Discord channel"
-    args_schema: type[SendMessageSchema] = SendMessageSchema
-
-    async def _arun(
-        self,
+    @tool(args_schema=SendMessageInput)
+    async def send_message(
         content: str | None = None,
         channel_id: int | None = None,
         tts: bool = False,
@@ -61,6 +56,7 @@ class DiscordSendMessageTool(BaseDiscordTool):
         config: RunnableConfig | None = None,
     ) -> str:
         """Send a message to a Discord channel.
+
         Args:
             content: The content of the message to send.
             channel_id: The ID of the channel to send the message to.
@@ -68,7 +64,13 @@ class DiscordSendMessageTool(BaseDiscordTool):
             embeds: List of embed dictionaries.
             files: List of file paths to send.
             reference: Message ID to reply to.
-            config: The runnable configuration.
+            stickers: List of sticker IDs to send.
+            suppress_embeds: Whether to suppress embeds in this message.
+            allowed_mentions: Controls which mentions are allowed in the message.
+            components: Message components (buttons, select menus, etc.).
+            thread_name: Creates a thread with this name from this message.
+            silent: Whether to send the message without triggering notifications.
+            config: Optional runnable config object.
 
         Returns:
             The ID of the sent message.
@@ -79,7 +81,7 @@ class DiscordSendMessageTool(BaseDiscordTool):
         if not channel_id and config:
             channel_id = config.get("configurable").get("channel_id")
         try:
-            channel = await self.client.fetch_channel(channel_id)
+            channel = await client.fetch_channel(channel_id)
             if not channel:
                 raise ToolException(f"Channel {channel_id} not found")
 
@@ -118,3 +120,5 @@ class DiscordSendMessageTool(BaseDiscordTool):
             return f"Message sent successfully with ID: {message.id}"
         except (Forbidden, NotFound) as e:
             raise ToolException(f"Failed to send message: {str(e)}") from e
+
+    return send_message

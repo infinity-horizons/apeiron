@@ -1,8 +1,9 @@
-from discord import Member
+from discord import Client, Member
+from discord.errors import Forbidden, NotFound
 from langchain_core.runnables import RunnableConfig
+from langchain_core.tools import tool
+from langchain_core.tools.base import ToolException
 from pydantic import BaseModel, Field
-
-from apeiron.tools.discord.base import BaseDiscordTool
 
 
 def to_dict(member: Member) -> dict:
@@ -24,7 +25,7 @@ def to_dict(member: Member) -> dict:
 class ListMembersInput(BaseModel):
     """Arguments for listing Discord guild members."""
 
-    guild_id: str | None = Field(
+    guild_id: int | None = Field(
         None, description="Discord guild (server) ID to list members from"
     )
     before: str | None = Field(
@@ -36,16 +37,12 @@ class ListMembersInput(BaseModel):
     limit: int = Field(100, description="Number of members to retrieve (max 100)")
 
 
-class DiscordListMembersTool(BaseDiscordTool):
-    """Tool for listing Discord guild members."""
+def create_list_members_tool(client: Client):
+    """Create a tool for listing Discord guild members."""
 
-    name: str = "list_members"
-    description: str = "List all members in a Discord guild (server)"
-    args_schema: type[ListMembersInput] = ListMembersInput
-
-    async def _arun(
-        self,
-        guild_id: str | None = None,
+    @tool(args_schema=ListMembersInput)
+    async def list_members(
+        guild_id: int | None = None,
         before: str | None = None,
         after: str | None = None,
         limit: int = 100,
@@ -62,15 +59,23 @@ class DiscordListMembersTool(BaseDiscordTool):
 
         Returns:
             List of member dictionaries.
-        """
-        if not guild_id and config:
-            guild_id = config.get("configurable").get("guild_id")
-        guild = await self.client.fetch_guild(int(guild_id))
-        kwargs = {"limit": limit}
-        if before:
-            kwargs["before"] = before
-        if after:
-            kwargs["after"] = after
 
-        members = await guild.fetch_members(**kwargs).flatten()
-        return [to_dict(member) for member in members]
+        Raises:
+            ToolException: If the members cannot be listed.
+        """
+        if guild_id is None and config:
+            guild_id = config.get("configurable").get("guild_id")
+        try:
+            guild = await client.fetch_guild(guild_id)
+            kwargs = {"limit": limit}
+            if before:
+                kwargs["before"] = before
+            if after:
+                kwargs["after"] = after
+
+            members = await guild.fetch_members(**kwargs).flatten()
+            return [to_dict(member) for member in members]
+        except (Forbidden, NotFound) as e:
+            raise ToolException(f"Failed to list members: {str(e)}") from e
+
+    return list_members

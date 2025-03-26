@@ -1,10 +1,9 @@
-from discord import Attachment, Message, MessageReference, NotFound, User
+from discord import Attachment, Client, Message, MessageReference, NotFound, User
 from discord.errors import Forbidden
+from langchain.tools import tool
 from langchain_core.runnables import RunnableConfig
 from langchain_core.tools.base import ToolException
 from pydantic import BaseModel, Field
-
-from apeiron.tools.discord.base import BaseDiscordTool
 
 
 def attachment_to_dict(attachment: Attachment) -> dict:
@@ -82,15 +81,11 @@ class GetMessageInput(BaseModel):
     )
 
 
-class DiscordGetMessageTool(BaseDiscordTool):
-    """Tool for retrieving a specific Discord message."""
+def create_get_message_tool(client: Client):
+    """Create a tool for retrieving a specific Discord message."""
 
-    name: str = "get_message"
-    description: str = "Get a specific message from a Discord channel"
-    args_schema: type[GetMessageInput] = GetMessageInput
-
-    async def _arun(
-        self,
+    @tool(args_schema=GetMessageInput)
+    async def get_message(
         channel_id: int | None = None,
         message_id: int | None = None,
         config: RunnableConfig | None = None,
@@ -100,21 +95,31 @@ class DiscordGetMessageTool(BaseDiscordTool):
         Args:
             channel_id: The ID of the channel containing the message.
             message_id: The ID of the message to retrieve.
-            config: Optional runnable configuration.
+            config: Optional RunnableConfig object.
 
         Returns:
-            Message data dictionary.
+            The message information.
 
         Raises:
-            ToolException: If there is an issue retrieving the message.
+            ToolException: If the message is not found or cannot be accessed.
         """
         if not channel_id and config:
             channel_id = config.get("configurable").get("channel_id")
-        if not message_id and config:
-            message_id = config.get("configurable").get("message_id")
         try:
-            channel = await self.client.fetch_channel(channel_id)
+            channel = await client.fetch_channel(channel_id)
+            if not channel:
+                raise ToolException(f"Channel {channel_id} not found")
+
             message = await channel.fetch_message(message_id)
             return to_dict(message)
-        except (Forbidden, NotFound) as e:
-            raise ToolException(f"Failed to get message: {str(e)}") from e
+
+        except NotFound as err:
+            raise ToolException(
+                f"Message {message_id} not found in channel {channel_id}"
+            ) from err
+        except Forbidden as err:
+            raise ToolException(
+                f"Cannot access message {message_id} in channel {channel_id}"
+            ) from err
+
+    return get_message
