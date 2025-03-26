@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 from apeiron.tools.discord.list_members import to_dict
 
 
-class SearchMembersSchema(BaseModel):
+class SearchMembersInput(BaseModel):
     """Arguments for searching Discord guild members."""
 
     query: str = Field(
@@ -23,11 +23,7 @@ class SearchMembersSchema(BaseModel):
 def create_search_members_tool(client: Client):
     """Create a tool for searching Discord guild members."""
 
-    @tool(
-        name="search_members",
-        description="Search members in a Discord guild (server) by username",
-        args_schema=SearchMembersSchema,
-    )
+    @tool(args_schema=SearchMembersInput)
     async def search_members(
         query: str,
         guild_id: int | None = None,

@@ -19,7 +19,7 @@ def to_dict(channel: TextChannel) -> dict:
     }
 
 
-class ListChannelsSchema(BaseModel):
+class ListChannelsInput(BaseModel):
     """Input for the DiscordListChannelsTool."""
 
     guild_id: int | None = Field(
@@ -30,11 +30,7 @@ class ListChannelsSchema(BaseModel):
 def create_list_channels_tool(client: Client):
     """Create a tool for listing Discord channels."""
 
-    @tool(
-        name="list_channels",
-        description="List channels in a Discord guild",
-        args_schema=ListChannelsSchema,
-    )
+    @tool(args_schema=ListChannelsInput)
     async def list_channels(
         guild_id: int | None = None,
         config: RunnableConfig | None = None,

@@ -21,7 +21,7 @@ def to_dict(emoji: Emoji) -> dict:
     }
 
 
-class GetEmojiSchema(BaseModel):
+class GetEmojiInput(BaseModel):
     """Arguments for retrieving a specific Discord emoji."""
 
     emoji_id: int = Field(description="The ID of the emoji to retrieve")
@@ -33,11 +33,7 @@ class GetEmojiSchema(BaseModel):
 def create_get_emoji_tool(client: Client):
     """Create a tool for retrieving a specific Discord emoji."""
 
-    @tool(
-        name="get_emoji",
-        description="Get a specific emoji from a Discord guild",
-        args_schema=GetEmojiSchema,
-    )
+    @tool(args_schema=GetEmojiInput)
     async def get_emoji(
         emoji_id: int,
         guild_id: int | None = None,

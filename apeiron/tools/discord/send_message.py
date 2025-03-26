@@ -6,7 +6,7 @@ from langchain_core.tools.base import ToolException
 from pydantic import BaseModel, Field
 
 
-class SendMessageSchema(BaseModel):
+class SendMessageInput(BaseModel):
     """Arguments for sending Discord messages."""
 
     content: str | None = Field(None, description="The content of the message to send")
@@ -39,11 +39,7 @@ class SendMessageSchema(BaseModel):
 def create_send_message_tool(client: Client):
     """Create a tool for sending messages to a Discord channel."""
 
-    @tool(
-        name="send_message",
-        description="Send a message to a Discord channel",
-        args_schema=SendMessageSchema,
-    )
+    @tool(args_schema=SendMessageInput)
     async def send_message(
         content: str | None = None,
         channel_id: int | None = None,
