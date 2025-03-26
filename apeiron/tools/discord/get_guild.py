@@ -1,8 +1,9 @@
-from discord import Guild, Role
+from discord import Guild, Role, Client
+from discord.errors import Forbidden, NotFound
 from langchain_core.runnables import RunnableConfig
+from langchain_core.tools.base import ToolException
+from langchain_core.tools import tool
 from pydantic import BaseModel, Field
-
-from apeiron.tools.discord.base import BaseDiscordTool
 
 
 def role_to_dict(role: Role) -> dict:
@@ -37,7 +38,7 @@ def to_dict(guild: Guild) -> dict:
     }
 
 
-class GetGuildInput(BaseModel):
+class GetGuildSchema(BaseModel):
     """Arguments for retrieving Discord guild information."""
 
     guild_id: str | None = Field(
@@ -45,15 +46,13 @@ class GetGuildInput(BaseModel):
     )
 
 
-class DiscordGetGuildTool(BaseDiscordTool):
-    """Tool for retrieving Discord guild information."""
+def create_get_guild_tool(client: Client):
+    """Create a tool for retrieving Discord guild information."""
 
-    name: str = "get_guild"
-    description: str = "Get information about a Discord guild (server)"
-    args_schema: type[GetGuildInput] = GetGuildInput
-
-    async def _arun(
-        self, guild_id: str | None = None, config: RunnableConfig | None = None
+    @tool(name="get_guild", description="Get information about a Discord guild (server)", args_schema=GetGuildSchema)
+    async def get_guild(
+        guild_id: str | None = None,
+        config: RunnableConfig | None = None,
     ) -> dict:
         """Get guild information.
 
@@ -66,5 +65,10 @@ class DiscordGetGuildTool(BaseDiscordTool):
         """
         if guild_id is None and config:
             guild_id = config.get("configurable").get("guild_id")
-        guild = await self.client.fetch_guild(int(guild_id))
-        return to_dict(guild)
+        try:
+            guild = await client.fetch_guild(int(guild_id))
+            return to_dict(guild)
+        except (Forbidden, NotFound) as e:
+            raise ToolException(f"Failed to get guild: {str(e)}") from e
+
+    return get_guild
