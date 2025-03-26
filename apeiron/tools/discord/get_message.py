@@ -70,7 +70,7 @@ def to_dict(message: Message) -> dict:
     return message_data
 
 
-class GetMessageSchema(BaseModel):
+class GetMessageInput(BaseModel):
     """Arguments for retrieving a specific Discord message."""
 
     channel_id: int | None = Field(
@@ -84,11 +84,7 @@ class GetMessageSchema(BaseModel):
 def create_get_message_tool(client: Client):
     """Create a tool for retrieving a specific Discord message."""
 
-    @tool(
-        name="get_message",
-        description="Get a specific message from a Discord channel",
-        args_schema=GetMessageSchema,
-    )
+    @tool(args_schema=GetMessageInput)
     async def get_message(
         channel_id: int | None = None,
         message_id: int | None = None,

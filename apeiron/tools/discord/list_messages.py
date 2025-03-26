@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 from apeiron.tools.discord.get_message import to_dict
 
 
-class ListMessagesSchema(BaseModel):
+class ListMessagesInput(BaseModel):
     """Arguments for listing Discord messages."""
 
     channel_id: int | None = Field(
@@ -29,11 +29,7 @@ class ListMessagesSchema(BaseModel):
 def create_list_messages_tool(client: Client):
     """Create a tool for reading messages from a Discord channel."""
 
-    @tool(
-        name="list_messages",
-        description="Read messages from a Discord channel with optional filters",
-        args_schema=ListMessagesSchema,
-    )
+    @tool(args_schema=ListMessagesInput)
     async def list_messages(
         channel_id: int | None = None,
         before: str | None = None,

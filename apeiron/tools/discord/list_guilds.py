@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 from apeiron.tools.discord.get_guild import to_dict
 
 
-class ListGuildsSchema(BaseModel):
+class ListGuildsInput(BaseModel):
     """Arguments for listing Discord guilds."""
 
     before: str | None = Field(
@@ -20,11 +20,7 @@ class ListGuildsSchema(BaseModel):
 def create_list_guilds_tool(client: Client):
     """Create a tool for listing Discord guilds the bot is a member of."""
 
-    @tool(
-        name="list_guilds",
-        description="List all Discord guilds (servers) the bot is a member of",
-        args_schema=ListGuildsSchema,
-    )
+    @tool(args_schema=ListGuildsInput)
     async def list_guilds(
         before: str | None = None,
         after: str | None = None,

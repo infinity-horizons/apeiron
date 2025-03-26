@@ -22,7 +22,7 @@ def to_dict(member: Member) -> dict:
     }
 
 
-class ListMembersSchema(BaseModel):
+class ListMembersInput(BaseModel):
     """Arguments for listing Discord guild members."""
 
     guild_id: int | None = Field(
@@ -40,11 +40,7 @@ class ListMembersSchema(BaseModel):
 def create_list_members_tool(client: Client):
     """Create a tool for listing Discord guild members."""
 
-    @tool(
-        name="list_members",
-        description="List all members in a Discord guild (server)",
-        args_schema=ListMembersSchema,
-    )
+    @tool(args_schema=ListMembersInput)
     async def list_members(
         guild_id: int | None = None,
         before: str | None = None,

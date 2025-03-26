@@ -18,7 +18,7 @@ def to_dict(user: User) -> dict:
     }
 
 
-class GetUserSchema(BaseModel):
+class GetUserInput(BaseModel):
     """Arguments for retrieving Discord user profile information."""
 
     user_id: int | None = Field(None, description="Discord user ID to look up")
@@ -27,11 +27,7 @@ class GetUserSchema(BaseModel):
 def create_get_user_tool(client: Client):
     """Create a tool for retrieving Discord user profile information."""
 
-    @tool(
-        name="user_profile",
-        description="Get information about a Discord user's profile",
-        args_schema=GetUserSchema,
-    )
+    @tool(args_schema=GetUserInput)
     async def get_user(
         user_id: int | None = None,
         config: RunnableConfig | None = None,

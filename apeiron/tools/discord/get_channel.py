@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 from apeiron.tools.discord.list_channels import to_dict
 
 
-class GetChannelSchema(BaseModel):
+class GetChannelInput(BaseModel):
     """Arguments for retrieving a specific Discord channel."""
 
     channel_id: int | None = Field(
@@ -19,11 +19,7 @@ class GetChannelSchema(BaseModel):
 def create_get_channel_tool(client: Client):
     """Create a tool for retrieving a specific Discord channel."""
 
-    @tool(
-        name="get_channel",
-        description="Get a specific channel from Discord",
-        args_schema=GetChannelSchema,
-    )
+    @tool(args_schema=GetChannelInput)
     async def get_channel(
         channel_id: int | None = None,
         config: RunnableConfig | None = None,
