@@ -1,7 +1,5 @@
-from discord import CategoryChannel, TextChannel, Client
-from discord.errors import Forbidden, NotFound
+from discord import Client, TextChannel
 from langchain_core.runnables import RunnableConfig
-from langchain_core.tools.base import ToolException
 from langchain_core.tools import tool
 from pydantic import BaseModel, Field
 
@@ -32,7 +30,11 @@ class ListChannelsSchema(BaseModel):
 def create_list_channels_tool(client: Client):
     """Create a tool for listing Discord channels."""
 
-    @tool(name="list_channels", description="List channels in a Discord guild", args_schema=ListChannelsSchema)
+    @tool(
+        name="list_channels",
+        description="List channels in a Discord guild",
+        args_schema=ListChannelsSchema,
+    )
     async def list_channels(
         guild_id: int | None = None,
         config: RunnableConfig | None = None,

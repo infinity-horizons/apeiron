@@ -1,10 +1,9 @@
-from discord import Attachment, Message, MessageReference, NotFound, User
+from discord import Attachment, Client, Message, MessageReference, NotFound, User
 from discord.errors import Forbidden
+from langchain.tools import tool
 from langchain_core.runnables import RunnableConfig
 from langchain_core.tools.base import ToolException
 from pydantic import BaseModel, Field
-
-from apeiron.tools.discord.base import BaseDiscordTool
 
 
 def attachment_to_dict(attachment: Attachment) -> dict:
@@ -85,7 +84,11 @@ class GetMessageSchema(BaseModel):
 def create_get_message_tool(client: Client):
     """Create a tool for retrieving a specific Discord message."""
 
-    @tool(name="get_message", description="Get a specific message from a Discord channel", args_schema=GetMessageSchema)
+    @tool(
+        name="get_message",
+        description="Get a specific message from a Discord channel",
+        args_schema=GetMessageSchema,
+    )
     async def get_message(
         channel_id: int | None = None,
         message_id: int | None = None,
@@ -114,13 +117,13 @@ def create_get_message_tool(client: Client):
             message = await channel.fetch_message(message_id)
             return to_dict(message)
 
-        except NotFound:
+        except NotFound as err:
             raise ToolException(
                 f"Message {message_id} not found in channel {channel_id}"
-            )
-        except Forbidden:
+            ) from err
+        except Forbidden as err:
             raise ToolException(
                 f"Cannot access message {message_id} in channel {channel_id}"
-            )
+            ) from err
 
     return get_message
