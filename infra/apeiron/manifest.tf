@@ -12,7 +12,6 @@ resource "kubernetes_secret" "apeiron" {
   data = {
     discord_token     = var.apeiron.discord_token
     google_ai_api_key = var.apeiron.google_ai_api_key
-    huggingface_token = var.apeiron.huggingface_token
     mistral_api_key   = var.apeiron.mistral_api_key
   }
   type = "Opaque"
