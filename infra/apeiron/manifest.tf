@@ -10,9 +10,10 @@ resource "kubernetes_secret" "apeiron" {
     namespace = kubernetes_namespace.infinity_horizons.metadata[0].name
   }
   data = {
-    google_ai_api_key = var.apeiron.google_ai_api_key
-    mistral_api_key   = var.apeiron.mistral_api_key
     discord_token     = var.apeiron.discord_token
+    google_ai_api_key = var.apeiron.google_ai_api_key
+    huggingface_token = var.apeiron.huggingface_token
+    mistral_api_key   = var.apeiron.mistral_api_key
   }
   type = "Opaque"
 }
