@@ -11,6 +11,7 @@ from langchain_core.runnables import RunnableConfig
 import apeiron.logging
 from apeiron.agents.operator_6o import Response, create_agent
 from apeiron.chat_models import create_chat_model
+from apeiron.store import create_store
 from apeiron.toolkits.discord.toolkit import DiscordToolkit
 from apeiron.tools.discord.utils import (
     create_configurable_from_guild,
@@ -29,14 +30,17 @@ logger = logging.getLogger(__name__)
 
 def create_bot():
     # Initialize the MistralAI model
-    agent_model = os.getenv("AGENT_MODEL", "pixtral-large-2411")
-    agent_provider = os.getenv("AGENT_PROVIDER", "mistralai")
-    model = create_chat_model(provider_name=agent_provider, model_name=agent_model)
+    chat_model = create_chat_model(
+        model=os.getenv("APEIRON_MODEL", "mistralai:pixtral-large-2411")
+    )
+    store = create_store(
+        model=os.getenv("APEIRON_EMBEDDING", "mistralai:mistral-embed"),
+    )
 
     # Initialize the Discord client
     bot = AutoShardedBot(intents=Intents.all())
     tools = DiscordToolkit(client=bot).get_tools()
-    graph = create_agent(tools=tools, model=model)
+    graph = create_agent(tools=tools, model=chat_model, store=store)
 
     @bot.listen
     async def on_ready():
