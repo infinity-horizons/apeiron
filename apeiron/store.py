@@ -13,7 +13,11 @@ def get_mistral_tokenizer(model_name: str) -> MistralTokenizer:
 
 def create_store(model: str, **kwargs) -> InMemoryStore:
     """Create a memory store."""
-    if model.startswith("mistralai:") or kwargs.get("model_provider") == "mistralai":
+    if (
+        model.startswith("mistralai:")
+        or kwargs.get("provider") == "mistralai"
+        and "tokenizer" not in kwargs
+    ):
         tokenizer = get_mistral_tokenizer(model.removeprefix("mistralai:"))
     else:
         tokenizer = None
