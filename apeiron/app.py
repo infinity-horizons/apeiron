@@ -33,7 +33,9 @@ def create_bot():
     chat_model = create_chat_model(
         model=os.getenv("APEIRON_MODEL", "mistralai:pixtral-large-2411")
     )
-    store = create_store()
+    store = create_store(
+        model=os.getenv("APEIRON_EMBEDDING", "mistralai:mistral-embed"),
+    )
 
     # Initialize the Discord client
     bot = AutoShardedBot(intents=Intents.all())
