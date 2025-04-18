@@ -18,14 +18,12 @@ def create_store(model: str, **kwargs) -> InMemoryStore:
         or kwargs.get("provider") == "mistralai"
         and "tokenizer" not in kwargs
     ):
-        tokenizer = get_mistral_tokenizer(model.removeprefix("mistralai:"))
-    else:
-        tokenizer = None
+        kwargs["tokenizer"] = get_mistral_tokenizer(model.removeprefix("mistralai:"))
 
     return InMemoryStore(
         index={
             "dims": 1536,
-            "embed": init_embeddings(model, tokenizer=tokenizer),
+            "embed": init_embeddings(model, **kwargs),
             "fields": ["text"],
         }
     )
