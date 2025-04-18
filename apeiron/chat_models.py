@@ -25,7 +25,7 @@ def create_mistral_get_token_ids(model: str, **kwargs) -> Callable[[str], list[i
 def create_chat_model(model: str, **kwargs) -> BaseChatModel:
     """Initialize the agent model based on the provider and model name."""
     if (
-        model.startswith("mistralai")
+        model.startswith("mistralai:")
         or kwargs.get("model_provider") == "mistralai"
         and "custom_get_token_ids" not in kwargs
     ):
