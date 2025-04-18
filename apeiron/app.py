@@ -25,14 +25,14 @@ logger = logging.getLogger(__name__)
 
 def create_bot():
     # Initialize the MistralAI model
-    agent_model = os.getenv("AGENT_MODEL", "pixtral-large-2411")
-    agent_provider = os.getenv("AGENT_PROVIDER", "mistralai")
-    model = create_chat_model(provider_name=agent_provider, model_name=agent_model)
+    chat_model = create_chat_model(
+        model=os.getenv("APEIRON_MODEL", "mistralai:pixtral-large-2411")
+    )
 
     # Initialize the Discord client
     bot = AutoShardedBot(intents=Intents.all())
     tools = DiscordToolkit(client=bot).get_tools()
-    graph = create_agent(tools=tools, model=model)
+    graph = create_agent(tools=tools, model=chat_model)
 
     # Discord message handler directly in create_app
     @bot.listen
