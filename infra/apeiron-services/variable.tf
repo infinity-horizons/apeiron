@@ -14,14 +14,6 @@ variable "google_ai" {
   sensitive   = true
 }
 
-variable "huggingface" {
-  type = object({
-    token = string
-  })
-  description = "Hugging Face"
-  sensitive   = true
-}
-
 variable "mistral" {
   type = object({
     api_key = string
