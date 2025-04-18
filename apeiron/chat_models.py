@@ -29,5 +29,7 @@ def create_chat_model(model: str, **kwargs) -> BaseChatModel:
         or kwargs.get("model_provider") == "mistralai"
         and "custom_get_token_ids" not in kwargs
     ):
-        kwargs["custom_get_token_ids"] = create_mistral_get_token_ids(model.removeprefix("mistralai:"))
+        kwargs["custom_get_token_ids"] = create_mistral_get_token_ids(
+            model.removeprefix("mistralai:")
+        )
     return init_chat_model(model, **kwargs)
