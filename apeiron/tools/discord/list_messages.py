@@ -1,13 +1,14 @@
+from discord import Client
 from discord.errors import Forbidden, NotFound
 from langchain_core.runnables import RunnableConfig
+from langchain_core.tools import tool
 from langchain_core.tools.base import ToolException
 from pydantic import BaseModel, Field
 
-from apeiron.tools.discord.base import BaseDiscordTool
 from apeiron.tools.discord.get_message import to_dict
 
 
-class ListMessagesSchema(BaseModel):
+class ListMessagesInput(BaseModel):
     """Arguments for listing Discord messages."""
 
     channel_id: int | None = Field(
@@ -25,15 +26,11 @@ class ListMessagesSchema(BaseModel):
     limit: int = Field(100, description="Number of messages to retrieve (max 100)")
 
 
-class DiscordListMessagesTool(BaseDiscordTool):
-    """Tool for reading messages from a Discord channel with optional filters."""
+def create_list_messages_tool(client: Client):
+    """Create a tool for reading messages from a Discord channel."""
 
-    name: str = "list_messages"
-    description: str = "Read messages from a Discord channel with optional filters"
-    args_schema: type[ListMessagesSchema] = ListMessagesSchema
-
-    async def _arun(
-        self,
+    @tool(args_schema=ListMessagesInput)
+    async def list_messages(
         channel_id: int | None = None,
         before: str | None = None,
         after: str | None = None,
@@ -47,6 +44,7 @@ class DiscordListMessagesTool(BaseDiscordTool):
             channel_id: ID of the channel to read messages from.
             before: Optional message ID to read messages before.
             after: Optional message ID to read messages after.
+            around: Optional message ID to read messages around.
             limit: Number of messages to retrieve (max 100).
             config: Optional RunnableConfig object.
 
@@ -59,7 +57,7 @@ class DiscordListMessagesTool(BaseDiscordTool):
         if channel_id is None and config:
             channel_id = config.get("configurable").get("channel_id")
         try:
-            channel = await self.client.fetch_channel(channel_id)
+            channel = await client.fetch_channel(channel_id)
             kwargs = {"limit": limit}
             if before:
                 kwargs["before"] = before
@@ -74,3 +72,5 @@ class DiscordListMessagesTool(BaseDiscordTool):
             return messages
         except (Forbidden, NotFound) as e:
             raise ToolException(f"Failed to read messages: {str(e)}") from e
+
+    return list_messages

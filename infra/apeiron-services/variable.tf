@@ -1,8 +1,8 @@
-variable "mistral" {
+variable "discord" {
   type = object({
-    api_key = string
+    token = string
   })
-  description = "Mistral"
+  description = "Discord bot"
   sensitive   = true
 }
 
@@ -14,10 +14,10 @@ variable "google_ai" {
   sensitive   = true
 }
 
-variable "discord" {
+variable "mistral" {
   type = object({
-    token = string
+    api_key = string
   })
-  description = "Discord bot"
+  description = "Mistral"
   sensitive   = true
 }
