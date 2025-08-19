@@ -9,7 +9,7 @@ from fastapi.responses import JSONResponse
 from langchain_core.runnables import RunnableConfig
 
 import apeiron.logging
-from apeiron.agents.operator_6o import Response, create_agent
+from apeiron.agents.operator_6o import create_agent
 from apeiron.chat_models import create_chat_model
 from apeiron.store import create_store
 from apeiron.toolkits.discord.toolkit import DiscordToolkit
@@ -41,13 +41,11 @@ def create_bot():
     # Discord message handler directly in create_app
     @bot.listen
     async def on_message(message: Message):
-        if is_bot_message(bot, message):
-            return
-
-        if not is_bot_mentioned(bot, message) and not is_private_channel(message):
-            logger.debug(
-                f"Message from {message.author.name} in {message.channel.name} "
-            )
+        if (
+            is_bot_message(bot, message)
+            or not is_bot_mentioned(bot, message)
+            and not is_private_channel(message)
+        ):
             return
 
         try:
@@ -61,17 +59,7 @@ def create_bot():
                     {"messages": [create_chat_message(message)]},
                     config=config,
                 )
-            response: Response = result["structured_response"]
-
-            match response.type:
-                case "send":
-                    await message.channel.send(content=response.content)
-                case "reply":
-                    await message.reply(content=response.content)
-                case "noop":
-                    logger.debug("No action needed")
-                case _:
-                    logger.warning("Unknown response type: %s", response.type)
+            await message.channel.send(result["messages"][-1].content)
 
         except Exception as e:
             logger.error(f"Error handling message event: {str(e)}")
