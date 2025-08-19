@@ -61,17 +61,7 @@ def create_bot():
                     {"messages": [create_chat_message(message)]},
                     config=config,
                 )
-            response: Response = result["structured_response"]
-
-            match response.type:
-                case "send":
-                    await message.channel.send(content=response.content)
-                case "reply":
-                    await message.reply(content=response.content)
-                case "noop":
-                    logger.debug("No action needed")
-                case _:
-                    logger.warning("Unknown response type: %s", response.type)
+            await message.channel.send(result["messages"][-1].content)
 
         except Exception as e:
             logger.error(f"Error handling message event: {str(e)}")
