@@ -7,9 +7,11 @@ from discord import AutoShardedBot, Client, Intents, Message
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from langchain_core.runnables import RunnableConfig
+from langchain_core.messages import trim_messages
 
 import apeiron.logging
-from apeiron.agents.operator_6o import Response, create_agent
+from apeiron.chat_message_histories.discord import DiscordChannelChatMessageHistory
+from apeiron.agents.operator_6o import create_agent
 from apeiron.chat_models import create_chat_model
 from apeiron.store import create_store
 from apeiron.toolkits.discord.toolkit import DiscordToolkit
@@ -20,6 +22,7 @@ from apeiron.tools.discord.utils import (
     is_bot_message,
     is_private_channel,
 )
+from apeiron.messages.utils import trim_messages_images
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +54,17 @@ def create_bot():
             return
 
         try:
+            chat_history = DiscordChannelChatMessageHistory(bot)
+            await chat_history.load_messages_from_message(message)
+            messages = trim_messages(
+                trim_messages_images(chat_history.messages, max_images=1),
+                token_counter=model,
+                strategy="last",
+                max_tokens=2000,
+                start_on="human",
+                end_on=("human", "tool"),
+                include_system=True,
+            )
             config: RunnableConfig = {
                 "configurable": create_configurable(message),
             }
@@ -58,7 +72,7 @@ def create_bot():
                 config["configurable"]["guild_id"] = message.guild.id
             async with message.channel.typing():
                 result = await graph.ainvoke(
-                    {"messages": [create_chat_message(message)]},
+                    {"messages": messages},
                     config=config,
                 )
             await message.channel.send(result["messages"][-1].content)
