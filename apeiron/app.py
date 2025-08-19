@@ -44,7 +44,7 @@ def create_bot():
         if (
             is_bot_message(bot, message)
             or not is_bot_mentioned(bot, message)
-            and not is_private_channel(message)
+            or not is_private_channel(message)
         ):
             return
 
