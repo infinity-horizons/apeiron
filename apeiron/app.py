@@ -44,27 +44,27 @@ def create_bot():
     # Discord message handler directly in create_app
     @bot.listen
     async def on_message(message: Message):
-        if is_bot_message(bot, message):
-            return
-
-        if not is_bot_mentioned(bot, message) and not is_private_channel(message):
-            logger.debug(
-                f"Message from {message.author.name} in {message.channel.name} "
-            )
+        if (
+            is_bot_message(bot, message)
+            or not is_bot_mentioned(bot, message)
+            and not is_private_channel(message)
+        ):
             return
 
         try:
             chat_history = DiscordChannelChatMessageHistory(bot)
             await chat_history.load_messages_from_message(message)
-            messages = trim_messages(
-                trim_messages_images(chat_history.messages, max_images=1),
-                token_counter=model,
-                strategy="last",
-                max_tokens=2000,
-                start_on="human",
-                end_on=("human", "tool"),
-                include_system=True,
-            )
+            inputs = {
+                "messages": trim_messages(
+                    trim_messages_images(chat_history.messages, max_images=1),
+                    token_counter=model,
+                    strategy="last",
+                    max_tokens=2000,
+                    start_on="human",
+                    end_on=("human", "tool"),
+                    include_system=True,
+                )
+            }
             config: RunnableConfig = {
                 "configurable": create_configurable(message),
             }
@@ -72,7 +72,7 @@ def create_bot():
                 config["configurable"]["guild_id"] = message.guild.id
             async with message.channel.typing():
                 result = await graph.ainvoke(
-                    {"messages": messages},
+                    inputs,
                     config=config,
                 )
             await message.channel.send(result["messages"][-1].content)

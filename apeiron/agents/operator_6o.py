@@ -11,6 +11,7 @@ from apeiron.agents.utils import load_prompt
 
 logger = logging.getLogger(__name__)
 
+
 def create_agent(**kwargs) -> BaseChatModel:
     """Create the Operator 6O agent for the graph.
 
