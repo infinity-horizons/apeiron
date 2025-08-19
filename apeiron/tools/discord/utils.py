@@ -6,10 +6,66 @@ from langchain_core.messages import AIMessage, HumanMessage
 from apeiron.tools.discord.get_message import to_dict
 
 
+def format_message(payload: dict) -> str:
+    """Format Discord message payload as markdown."""
+    markdown_content = []
+
+    # Message header
+    markdown_content.append(f"## Discord Message")
+    markdown_content.append(f"**ID:** `{payload['id']}`")
+    markdown_content.append(f"**Channel:** `{payload['channel_id']}`")
+    if payload.get('guild_id'):
+        markdown_content.append(f"**Guild:** `{payload['guild_id']}`")
+    markdown_content.append(f"**Timestamp:** {payload['timestamp']}")
+    if payload.get('edited_timestamp'):
+        markdown_content.append(f"**Edited:** {payload['edited_timestamp']}")
+
+    # Author info
+    author = payload['author']
+    markdown_content.append(f"\n### Author")
+    markdown_content.append(f"**Name:** {author['name']}")
+    if author['display_name'] != author['name']:
+        markdown_content.append(f"**Display Name:** {author['display_name']}")
+    markdown_content.append(f"**ID:** `{author['id']}`")
+    markdown_content.append(f"**Bot:** {'Yes' if author['bot'] else 'No'}")
+    if author.get('avatar_url'):
+        markdown_content.append(f"**Avatar:** [View Avatar]({author['avatar_url']})")
+
+    # Message content
+    if payload['content']:
+        markdown_content.append(f"\n### Content")
+        markdown_content.append(f"```\n{payload['content']}\n```")
+
+    # Attachments
+    if payload['attachments']:
+        markdown_content.append(f"\n### Attachments ({len(payload['attachments'])})")
+        for i, attachment in enumerate(payload['attachments'], 1):
+            markdown_content.append(f"\n**Attachment {i}:**")
+            markdown_content.append(f"- **Filename:** {attachment['filename']}")
+            markdown_content.append(f"- **Size:** {attachment['size']} bytes")
+            markdown_content.append(f"- **Type:** {attachment.get('content_type', 'Unknown')}")
+            markdown_content.append(f"- **URL:** [Download]({attachment['url']})")
+            if attachment.get('type') == 'image' and attachment.get('dimensions'):
+                dims = attachment['dimensions']
+                markdown_content.append(f"- **Dimensions:** {dims['width']}x{dims['height']}")
+
+    # Referenced message
+    if payload.get('reference'):
+        ref = payload['reference']
+        markdown_content.append(f"\n### Reply To")
+        markdown_content.append(f"**Message ID:** `{ref['id']}`")
+        markdown_content.append(f"**Author:** {ref['author']}")
+        markdown_content.append(f"**Timestamp:** {ref['timestamp']}")
+        if ref['content']:
+            markdown_content.append(f"**Content:** {ref['content'][:100]}{'...' if len(ref['content']) > 100 else ''}")
+
+    return "\n".join(markdown_content)
+
+
 def create_chat_message(message: Message) -> AIMessage | HumanMessage:
     """Create a message event as AIMessage or HumanMessage."""
-    message_payload = to_dict(message)
-    event_data = {"type": "on_message_event", "payload": message_payload}
+    text = format_message(to_dict(message))
+
     content = []
     for attachment in message.attachments:
         if attachment.content_type and attachment.content_type.startswith("image/"):
@@ -20,9 +76,9 @@ def create_chat_message(message: Message) -> AIMessage | HumanMessage:
                 }
             )
     if content:
-        content.append({"type": "text", "text": json.dumps(event_data)})
+        content.append({"type": "text", "text": text})
     else:
-        content = json.dumps(event_data)
+        content = text
 
     return (
         AIMessage(content=content)
