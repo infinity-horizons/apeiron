@@ -16,7 +16,6 @@ from apeiron.chat_models import create_chat_model
 from apeiron.store import create_store
 from apeiron.toolkits.discord.toolkit import DiscordToolkit
 from apeiron.tools.discord.utils import (
-    create_chat_message,
     create_configurable,
     is_bot_mentioned,
     is_bot_message,
