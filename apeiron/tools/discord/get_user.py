@@ -1,8 +1,7 @@
-from discord import User
+from discord import Client, User
 from langchain_core.runnables import RunnableConfig
+from langchain_core.tools import tool
 from pydantic import BaseModel, Field
-
-from apeiron.tools.discord.base import BaseDiscordTool
 
 
 def to_dict(user: User) -> dict:
@@ -20,18 +19,18 @@ def to_dict(user: User) -> dict:
 
 
 class GetUserInput(BaseModel):
+    """Arguments for retrieving Discord user profile information."""
+
     user_id: int | None = Field(None, description="Discord user ID to look up")
 
 
-class DiscordGetUserTool(BaseDiscordTool):
-    """Tool for retrieving Discord user profile information."""
+def create_get_user_tool(client: Client):
+    """Create a tool for retrieving Discord user profile information."""
 
-    name: str = "user_profile"
-    description: str = "Get information about a Discord user's profile"
-    args_schema: type[GetUserInput] = GetUserInput
-
-    async def _arun(
-        self, user_id: int | None = None, config: RunnableConfig | None = None
+    @tool(args_schema=GetUserInput)
+    async def get_user(
+        user_id: int | None = None,
+        config: RunnableConfig | None = None,
     ) -> dict:
         """Get user profile information.
 
@@ -44,5 +43,7 @@ class DiscordGetUserTool(BaseDiscordTool):
         """
         if user_id is None and config:
             user_id = config.get("configurable").get("user_id")
-        user = await self.client.fetch_user(user_id)
+        user = await client.fetch_user(user_id)
         return to_dict(user)
+
+    return get_user
