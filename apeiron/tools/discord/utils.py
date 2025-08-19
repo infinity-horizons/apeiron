@@ -1,5 +1,3 @@
-import json
-
 from discord import Client, Message
 from langchain_core.messages import AIMessage, HumanMessage
 
