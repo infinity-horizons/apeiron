@@ -58,7 +58,8 @@ def create_bot():
                     {"messages": [create_chat_message(message)]},
                     config=config,
                 )
-            await message.channel.send(result["messages"][-1].content)
+            response: Response = result["structured_response"]
+            await message.channel.send(response.content)
 
         except Exception as e:
             logger.error(f"Error handling message event: {str(e)}")
