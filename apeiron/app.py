@@ -38,7 +38,6 @@ def create_bot():
     tools = DiscordToolkit(client=bot).get_tools()
     graph = create_agent(tools=tools, model=chat_model, store=store)
 
-    # Discord message handler directly in create_app
     @bot.listen
     async def on_message(message: Message):
         if (
